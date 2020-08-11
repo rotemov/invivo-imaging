@@ -481,5 +481,3 @@ if proc.lower() == 'y':
         io.imsave(path + '/cell_demixing_matrix' + suffix + '.tif',
                   np.linalg.inv(np.array(X2[:, :nCells].T @ X2[:, :nCells])) @ X2[:, :nCells].T)
     print('Saved!')
-
-# In[ ]:
