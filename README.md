@@ -16,9 +16,9 @@ Spike-Guided Penalized Matrix Decomposition-Non-negative Matrix Factorization (S
 
 ## Instructions
 
-Instructions to run the pipeline here: http://bit.ly/sgpmdnmf-steps
+Instructions to run the pipeline here: http://bit.ly/sgpmdnmf-steps (Not comprehensive)
 
-Detailed instructions for setup on Harvard's Cannon cluster: http://bit.ly/harvard-sgpmdnmf-steps
+Detailed instructions for setup on Harvard's Cannon cluster: http://bit.ly/harvard-sgpmdnmf-steps (Semi comprehensive)
 
 ## Dependencies
 
