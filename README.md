@@ -1,4 +1,6 @@
-# invivo-imaging
+# invivo-imaging (Adam Lab HUJI)
+
+Yoav Adam's Lab @ HUJI - subversion of main pipeline for running on ELSC cluster.
 
 Spike-Guided Penalized Matrix Decomposition-Non-negative Matrix Factorization (SGPMD-NMF) pipeline code for in vivo voltage imaging
 
