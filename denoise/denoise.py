@@ -100,7 +100,6 @@ if not os.path.isfile(out_dir + '/detr_nnorm.tif'):
 
 	outliers = False # outliers already removed
 	print('Trimmed movie loaded\n')
-
 	if outliers:
 		outlier_idx, disc_idx = flag_outliers(raw_mov[20,140], thresh_stdv=4, buffer=10, visualize=None)
 		mov = np.delete(raw_mov, outlier_idx, axis=-1)
@@ -111,7 +110,7 @@ if not os.path.isfile(out_dir + '/detr_nnorm.tif'):
 		disc_idx = np.array([])    
 
 	start = time.time()
-
+    
 	mov_nopbleach, trend, stim, disc_idx = detrend(mov, stim, disc_idx.squeeze(), visualize=None, spacing=detr_spacing)
 	mov_detr = mov_nopbleach;
 	# mov_detr, subthr, stim, disc_idx = detrend(mov_nopbleach, stim, disc_idx.squeeze(), visualize=None, spacing=50)

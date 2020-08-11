@@ -4,7 +4,7 @@ addpath(genpath(fullfile(cd,'..','lib')));
 
 harvard_cannon = 0;
 
-home = fullfile(cd,'..','demo_data');
+home = fullfile(cd,'..','demo_data_no_GUI');
 
 output = fullfile(home,'output');
 
