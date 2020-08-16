@@ -1,5 +1,7 @@
 %% Initialization
 close all; clear all;
+GUI = 0;
+
 addpath(genpath(fullfile(cd,'..','lib')));
 
 harvard_cannon = 0;
@@ -40,7 +42,7 @@ if harvard_cannon % command for Harvard Cannon cluster
         home, mov_in, output, detr_spacing, row_blocks, col_blocks,...
         trunc_start-1, trunc_length, stim_dir);
 else % general command
-    run_command = sprintf("source ~/Scripts/activate_invivo.sh\n python denoise.py ""%s"" ""%s"" ""%s"" %d %d %d %d %d ""%s""",...
+    run_command = sprintf("source ~/invivo-imaging/activate_invivo.sh\n python denoise.py ""%s"" ""%s"" ""%s"" %d %d %d %d %d ""%s""",...
         home, mov_in, output, detr_spacing, row_blocks, col_blocks,...
         trunc_start-1, trunc_length, stim_dir);
 %     run_command = sprintf("source ~/intel/parallel_studio_xe_2020.2.108/bin/psxevars.sh\n source ~/.bashrc\n source ~/anaconda3/bin/activate invivo\n python denoise.py ""%s"" ""%s"" ""%s"" %d %d %d %d %d ""%s""",...
@@ -62,93 +64,95 @@ end
 system(moco_command);
 
 %% blood removal
+if GUI
+    out4 = loadtiff(fullfile(output,'motion_corrected.tif')); % open file
+    [ysize, xsize, ~] = size(out4);
 
-out4 = loadtiff(fullfile(output,'motion_corrected.tif')); % open file
-[ysize, xsize, ~] = size(out4);
+    smoothing=100; %for high pass filter
+    movHP = out4 - imfilter(out4, ones(1,1,smoothing)/smoothing, 'replicate');
 
-smoothing=100; %for high pass filter
-movHP = out4 - imfilter(out4, ones(1,1,smoothing)/smoothing, 'replicate');
+    flucImg = mean(movHP(:,:,1:end-1).*movHP(:,:,2:end), 3);
+    flucImgS = imfilter(flucImg, fspecial('gaussian', [5 5], 2), 'replicate');
 
-flucImg = mean(movHP(:,:,1:end-1).*movHP(:,:,2:end), 3);
-flucImgS = imfilter(flucImg, fspecial('gaussian', [5 5], 2), 'replicate');
+    refimg = (flucImgS).^(0.5);
 
-refimg = (flucImgS).^(0.5);
+    nframes = size(out4, 3);
 
-nframes = size(out4, 3);
+    figure(882); clf;
+    imshow(refimg, [], 'InitialMagnification', 'fit')
+    title('click to remove blood')
+    xlabel('right click to choose area to mask, left click to stop and click again to exit')
+    hold on;
 
-figure(882); clf;
-imshow(refimg, [], 'InitialMagnification', 'fit')
-title('click to remove blood')
-xlabel('right click to choose area to mask, left click to stop and click again to exit')
-hold on;
+    inpoly = zeros(size(refimg));
 
-inpoly = zeros(size(refimg));
+    [ysize, xsize] = size(refimg(:,:,1));
+    npts = 1;
+    colorindex = 0;
+    order = get(gca,'ColorOrder');
+    nroi = 1;
+    [x, y] = meshgrid(1:xsize, 1:ysize);
+    while(npts > 0)
+        [xv, yv] = (getline(gca, 'closed'));
+        if size(xv,1) < 3  % exit loop if only a line is drawn
+            break
+        end
+        inpoly = inpoly + inpolygon(x,y,xv,yv);
 
-[ysize, xsize] = size(refimg(:,:,1));
-npts = 1;
-colorindex = 0;
-order = get(gca,'ColorOrder');
-nroi = 1;
-[x, y] = meshgrid(1:xsize, 1:ysize);
-while(npts > 0)
-    [xv, yv] = (getline(gca, 'closed'));
-    if size(xv,1) < 3  % exit loop if only a line is drawn
-        break
+        %draw the bounding polygons and label them
+        currcolor = order(1+mod(colorindex,size(order,1)),:);
+        plot(xv, yv, 'Linewidth', 1,'Color',currcolor);
+        text(mean(xv),mean(yv),num2str(colorindex+1),'Color',currcolor,'FontSize',12);
+
+        colorindex = colorindex+1;
+        roi_points{nroi} = [xv, yv];
+        nroi = nroi + 1;
     end
-    inpoly = inpoly + inpolygon(x,y,xv,yv);
-    
-    %draw the bounding polygons and label them
-    currcolor = order(1+mod(colorindex,size(order,1)),:);
-    plot(xv, yv, 'Linewidth', 1,'Color',currcolor);
-    text(mean(xv),mean(yv),num2str(colorindex+1),'Color',currcolor,'FontSize',12);
-    
-    colorindex = colorindex+1;
-    roi_points{nroi} = [xv, yv];
-    nroi = nroi + 1;
+
+    bloodmask = uint8(inpoly==0);
+    mov = out4.*repmat(inpoly==0, [1, 1, nframes]);
+    options.overwrite=true;
+    saveastiff(bloodmask,fullfile(output,'bloodmask.tif'),options);
 end
-
-bloodmask = uint8(inpoly==0);
-mov = out4.*repmat(inpoly==0, [1, 1, nframes]);
-options.overwrite=true;
-saveastiff(bloodmask,fullfile(output,'bloodmask.tif'),options);
-
 %% background selection
-figure(883); clf;
-imshow(refimg, [], 'InitialMagnification', 'fit')
-title('click to select background')
-hold on;
+if GUI
+    figure(883); clf;
+    imshow(refimg, [], 'InitialMagnification', 'fit')
+    title('click to select background')
+    hold on;
 
-inpoly = zeros(size(refimg));
+    inpoly = zeros(size(refimg));
 
-[ysize, xsize] = size(refimg(:,:,1));
-npts = 1;
-colorindex = 0;
-order = get(gca,'ColorOrder');
-nroi = 1;
-intens = [];
-[x, y] = meshgrid(1:xsize, 1:ysize);
-while(npts > 0)
-    [xv, yv] = (getline(gca, 'closed'));
-    if size(xv,1) < 3  % exit loop if only a line is drawn
-        break
+    [ysize, xsize] = size(refimg(:,:,1));
+    npts = 1;
+    colorindex = 0;
+    order = get(gca,'ColorOrder');
+    nroi = 1;
+    intens = [];
+    [x, y] = meshgrid(1:xsize, 1:ysize);
+    while(npts > 0)
+        [xv, yv] = (getline(gca, 'closed'));
+        if size(xv,1) < 3  % exit loop if only a line is drawn
+            break
+        end
+        inpoly = inpoly + inpolygon(x,y,xv,yv);
+
+        %draw the bounding polygons and label them
+        currcolor = order(1+mod(colorindex,size(order,1)),:);
+        plot(xv, yv, 'Linewidth', 1,'Color',currcolor);
+        text(mean(xv),mean(yv),num2str(colorindex+1),'Color',currcolor,'FontSize',12);
+
+        colorindex = colorindex+1;
+        roi_points{nroi} = [xv, yv];
+        nroi = nroi + 1;
     end
-    inpoly = inpoly + inpolygon(x,y,xv,yv);
-    
-    %draw the bounding polygons and label them
-    currcolor = order(1+mod(colorindex,size(order,1)),:);
-    plot(xv, yv, 'Linewidth', 1,'Color',currcolor);
-    text(mean(xv),mean(yv),num2str(colorindex+1),'Color',currcolor,'FontSize',12);
-    
-    colorindex = colorindex+1;
-    roi_points{nroi} = [xv, yv];
-    nroi = nroi + 1;
-end
 
-background = mov.*repmat(inpoly~=0, [1, 1, nframes]);
-background = background - repmat(mean(background,3),[1 1 nframes]);
-[U, S, V] = svds(double(reshape(background,[size(background,1)*size(background,2), nframes])),6);
-ff = (V - mean(V,2));
-fb = (U * S);
-figure(884);stackplot(ff);
-saveastiff(ff,fullfile(output,'ff.tif'),options);
-saveastiff(fb,fullfile(output,'fb.tif'),options);
+    background = mov.*repmat(inpoly~=0, [1, 1, nframes]);
+    background = background - repmat(mean(background,3),[1 1 nframes]);
+    [U, S, V] = svds(double(reshape(background,[size(background,1)*size(background,2), nframes])),6);
+    ff = (V - mean(V,2));
+    fb = (U * S);
+    figure(884);stackplot(ff);
+    saveastiff(ff,fullfile(output,'ff.tif'),options);
+    saveastiff(fb,fullfile(output,'fb.tif'),options);
+end
