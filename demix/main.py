@@ -1,33 +1,21 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# # Demixing Components and Recovering Correlation Structure
-
-# In[2]:
-
-
 import time, os, itertools
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-
-sys.path.append(os.getcwd())
-
 import superpixel_analysis as sup
-import util_plot
-
 from skimage import io
-
-import scipy.io
 from scipy.ndimage import center_of_mass, filters, gaussian_filter
 from sklearn.decomposition import TruncatedSVD
-
 import torch
+import scipy.io
+import util_plot
+
+sys.path.append(os.getcwd())
 
 # ## Read in movie
 
 # In[3]:
-GUI = True
+GUI = False
 OPTOPATCH_STIM = False
 PLOT_PATH = '../demo_data/plots/'
 # input movie path
@@ -40,23 +28,29 @@ def save_plot(name):
         plt.show()
 
 
+def ask_proceed():
+    proc = input('Ok to proceed? (y/n) ')
+    if proc.lower() == 'n':
+        raise KeyboardInterrupt('Stop requested by user.')
+
+
 # read in motion corrected movie
 noise = np.squeeze(io.imread(path + '/Sn_image.tif'))
 [nrows, ncols] = noise.shape
 
 if os.path.isfile(path + '/motion_corrected.tif'):
-    mov = io.imread(path + '/motion_corrected.tif').transpose(1, 2, 0);
+    mov = io.imread(path + '/motion_corrected.tif').transpose(1, 2, 0)
 elif os.path.isfile(path + '/denoised.tif'):
-    mov = io.imread(path + '/denoised.tif');
+    mov = io.imread(path + '/denoised.tif')
 else:
-    raise ValueError('No valid input file');
+    raise ValueError('No valid input file')
 
 # read in the mask for blood
 if os.path.isfile(path + '/bloodmask.tif'):
-    bloodmask = np.squeeze(io.imread(path + '/bloodmask.tif'));
-    mov = mov * np.repeat(np.expand_dims(noise * bloodmask, 2), mov.shape[2], axis=2);
+    bloodmask = np.squeeze(io.imread(path + '/bloodmask.tif'))
+    mov = mov * np.repeat(np.expand_dims(noise * bloodmask, 2), mov.shape[2], axis=2)
 else:
-    mov = mov * np.repeat(np.expand_dims(noise, 2), mov.shape[2], axis=2);
+    mov = mov * np.repeat(np.expand_dims(noise, 2), mov.shape[2], axis=2)
 
 plt.imshow(np.std(mov, axis=2))
 save_plot('Average')
@@ -72,7 +66,7 @@ movB = mov.reshape(int(mov.shape[0] / 2), 2, int(mov.shape[1] / 2), 2, mov.shape
 movB = np.mean(np.mean(movB, axis=1), axis=2);
 movB.shape
 
-movB = mov;
+movB = mov
 
 plt.imshow(np.std(movB, axis=2))
 
@@ -246,11 +240,8 @@ save_plot('NMF_Traces')
 
 # In[11]:
 
-
-proc = input('Ok to proceed? (y/n) ')
-
-if proc.lower() == 'n':
-    raise KeyboardInterrupt('Stop requested by user.')
+if GUI:
+    ask_proceed()
 
 # ## Get Background Components from Unfiltered Movie
 
@@ -314,12 +305,10 @@ ref_im = np.std(movB, axis=2).transpose(1, 0)
 for cell_num in range(cell_ct):
     plt.subplot(cell_ct, 2, 2 * cell_num + 1)
     plt.plot(c[:, cell_num])
-    plt.title(cell_num, size=24)
-
+    plt.title(cell_num, size=16)
     plt.subplot(cell_ct, 2, 2 * cell_num + 2)
     lower, upper = np.percentile(ref_im.flatten(), [1, 99])
     plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
-
     cell_loc = a[:, cell_num].reshape(movB.shape[1], movB.shape[0])  # .transpose(1,0)
     cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
     plt.imshow(cell_loc, cmap='jet', alpha=0.5)
@@ -347,10 +336,8 @@ save_plot('BG_Traces')
 # In[24]:
 
 
-proc = input('Ok to proceed? (y/n) ')
-
-if proc.lower() == 'n':
-    raise KeyboardInterrupt('Stop requested by user.')
+if GUI:
+    ask_proceed()
 
 
 # ## Choose Cells and Recover Temporal Correlation Structures
@@ -364,7 +351,7 @@ def tv_norm(image):
 
 Y = movB.transpose(1, 0, 2).reshape(movB.shape[0] * movB.shape[1], movB.shape[2])
 X = np.hstack((a, fb))
-X = X / np.ptp(X, axis=0);
+X = X / np.ptp(X, axis=0)
 X2 = np.zeros((X.shape[0], nCells + bg_rank))
 X2[:, :nCells] = X[:, :nCells]
 
@@ -400,10 +387,10 @@ for b in range(bg_rank):
 
     opt_weights = weights.data.numpy()
 
-    X2[:, -(b + 1)] = np.maximum(X[:, -(b + 1)] - np.squeeze(X[:, :nCells] @ opt_weights), 0);
+    X2[:, -(b + 1)] = np.maximum(X[:, -(b + 1)] - np.squeeze(X[:, :nCells] @ opt_weights), 0)
 
     plt.subplot(bg_rank, 2, (bg_rank - b) * 2)
-    plt.imshow(X2[:, -(b + 1)].reshape(movB.shape[-2::-1]), vmin=0, vmax=1);
+    plt.imshow(X2[:, -(b + 1)].reshape(movB.shape[-2::-1]), vmin=0, vmax=1)
     plt.title(str(tv_norm(X2[:, -(b + 1)].reshape(movB.shape[-2::-1]).T)))
     plt.colorbar()
 save_plot('Temporal_Correlations')
@@ -413,8 +400,10 @@ save_plot('Temporal_Correlations')
 # In[26]:
 
 if OPTOPATCH_STIM:
-    proc = input('Do you want to load a trend? (y/n) ');
-
+    if GUI:
+        proc = input('Do you want to load a trend? (y/n) ')
+    else:
+        proc = 'y'
     if proc.lower() == 'y':
         trend = io.imread(path + '/trend.tif')
         plt.imshow(np.mean(trend, axis=2))
@@ -459,8 +448,10 @@ save_plot('Traces')
 
 # In[29]:
 
-
-proc = input('Do you want to save out results? (y/n) ')
+if GUI:
+    proc = input('Do you want to save out results? (y/n) ')
+else:
+    proc = 'y'
 
 if proc.lower() == 'y':
     suffix = ''
@@ -481,5 +472,3 @@ if proc.lower() == 'y':
         io.imsave(path + '/cell_demixing_matrix' + suffix + '.tif',
                   np.linalg.inv(np.array(X2[:, :nCells].T @ X2[:, :nCells])) @ X2[:, :nCells].T)
     print('Saved!')
-
-# In[ ]:
