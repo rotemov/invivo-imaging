@@ -1,5 +1,4 @@
 %% Initialization
-close all; clear all;
 GUI = 0;
 
 addpath(genpath(fullfile(cd,'..','lib')));
