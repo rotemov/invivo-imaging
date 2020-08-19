@@ -1,4 +1,4 @@
-function main = main(data_dir, program_dir)
+function main = main(data_dir, file_name)
     %% Initialization
     GUI = 0;
 
@@ -22,7 +22,7 @@ function main = main(data_dir, program_dir)
     end
 
     %% NoRMCorre image registration
-    mov=loadtiff(fullfile(home,'raw_data.tif'));
+    mov=loadtiff(fullfile(home, file_name));
     [nrows, ncols, nframes] = size(mov);
     movReg=NoRMCorre2(mov,home); % get registered movie
     clear mov
