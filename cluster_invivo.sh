@@ -8,11 +8,11 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=rotem.ovadia@mail.huji.ac.il
 
-DATA = 'demo_data'
+DATA = "demo_data"
 
 cd denoise
 # matlab2017b -batch "main; exit"
-matlab -batch "main($DATA); exit"
+matlab -batch "main("$DATA"); exit"
 # matlab2017b -nodisplay -nosplash -r "main; exit"
 echo "Denoising done"
 
@@ -21,5 +21,5 @@ eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
 conda activate invivo
 echo "invivo env activated"
 cd ../demix
-python main.py $DATA
+python main.py "$DATA"
 echo "Demixing done"
