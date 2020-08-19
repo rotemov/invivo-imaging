@@ -10,7 +10,7 @@
 #SBATCH --export=DATA="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/demo_data"
 
 cd denoise
-matlab -batch "main("$DATA"); exit"
+matlab -batch "main('"$DATA"'); exit"
 echo "Denoising done"
 source ../activate_invivo.sh
 cd ../demix
