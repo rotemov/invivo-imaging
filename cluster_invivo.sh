@@ -21,7 +21,7 @@ echo "Denoising done"
 
 eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
 conda activate invivo
-echo "invivo env activated"
+echo "Demix invivo env activated"
 cd ../demix
-python main.py $DATA
+python main.py "$DATA"
 echo "Demixing done"

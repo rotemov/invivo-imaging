@@ -14,6 +14,7 @@ sys.path.append(os.getcwd())
 
 # ## Read in movie
 data_dir = sys.argv[1]
+print(data_dir)
 
 # In[3]:
 GUI = False
@@ -25,6 +26,7 @@ path = data_dir + '/output'
 
 def save_plot(name):
     plt.savefig(PLOT_PATH + name + '.png')
+    print("Plot saved: "+name+".png")
     if GUI:
         plt.show()
 
