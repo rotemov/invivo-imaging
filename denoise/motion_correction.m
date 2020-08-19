@@ -22,7 +22,7 @@ if exist(fullfile(home,'reg_shifts.mat'),'file')
             exit;
         end
     end
-    
+    ouput
     tic;
     mov = shiftdim(loadtiff(fullfile(output,'denoised.tif')),2);
     [ySize, xSize, nFrames] = size(mov);
