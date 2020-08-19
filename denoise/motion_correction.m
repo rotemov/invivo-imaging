@@ -1,5 +1,6 @@
 % clc;clearvars;close all
 
+genpath(fullfile(home,'..','lib'))
 addpath(genpath(fullfile(home,'..','lib')))
 
 %%
