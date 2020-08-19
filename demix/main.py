@@ -14,6 +14,7 @@ sys.path.append(os.getcwd())
 
 # ## Read in movie
 data_dir = sys.argv[1]
+print("Demixing Start")
 print(data_dir)
 
 # In[3]:
