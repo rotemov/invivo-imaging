@@ -1,6 +1,6 @@
 % clc;clearvars;close all
 
-addpath(genpath(fullfile(home,'..','lib')));
+addpath(genpath(fullfile(home,'..','lib')))
 
 %%
 if exist(fullfile(home,'reg_shifts.mat'),'file')
