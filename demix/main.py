@@ -204,7 +204,6 @@ for p in range(num_pass):
         pos0 = pos[0]
         pos1 = pos[1]
         ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
-                 f"{brightness_rank[ii] + 1}",
                  verticalalignment='bottom', horizontalalignment='right', color='black',
                  fontsize=15)
         """ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
