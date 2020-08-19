@@ -4,3 +4,5 @@ source ~/.bashrc
 echo "bashrc sourced"
 source ~/Programs/anaconda3/bin/activate invivo
 echo "invivo env activated"
+# OpenBLAS
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HOME}/Programs/OpenBLAS"
