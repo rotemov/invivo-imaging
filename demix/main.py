@@ -13,13 +13,14 @@ import util_plot
 sys.path.append(os.getcwd())
 
 # ## Read in movie
+data_dir = sys.argv[1]
 
 # In[3]:
 GUI = False
 OPTOPATCH_STIM = False
-PLOT_PATH = '../demo_data/plots/'
+PLOT_PATH = data_dir + '/plots/'
 # input movie path
-path = '../demo_data/output'
+path = data_dir + '/output'
 
 
 def save_plot(name):
