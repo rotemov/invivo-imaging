@@ -206,7 +206,11 @@ for p in range(num_pass):
         ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
                  f"{brightness_rank[ii] + 1}",
                  verticalalignment='bottom', horizontalalignment='right', color='black',
-                 fontsize=15)  # , fontweight="bold")
+                 fontsize=15)
+        """ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
+                 f"{brightness_rank[ii] + 1}",
+                 verticalalignment='bottom', horizontalalignment='right', color='black',
+                 fontsize=15)  # , fontweight="bold")"""
 
     ax1.set(title="pass " + str(p + 1))
     ax1.title.set_fontsize(15)
