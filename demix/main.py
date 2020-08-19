@@ -63,8 +63,8 @@ save_plot('Average')
 # In[4]:
 
 
-movB = mov.reshape(int(mov.shape[0] / 2), 2, int(mov.shape[1] / 2), 2, mov.shape[2]);
-movB = np.mean(np.mean(movB, axis=1), axis=2);
+movB = mov.reshape(int(mov.shape[0] / 2), 2, int(mov.shape[1] / 2), 2, mov.shape[2])
+movB = np.mean(np.mean(movB, axis=1), axis=2)
 movB.shape
 
 movB = mov
@@ -80,7 +80,7 @@ save_plot('Average_Binned_Movie')
 # In[5]:
 
 # TODO: solve bg output
-bg_flag = os.path.isfile(path + '/ff.tif');
+bg_flag = os.path.isfile(path + '/ff.tif')
 
 if bg_flag:
     # import manually initialized background components
