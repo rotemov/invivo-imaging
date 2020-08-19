@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -J II
-#SBATCH -o II.out
-#SBATCH -e II.err
-#SBATCH -N 5
-#SBATCH -c 60
+#SBATCH -o logs/II_%j.out
+#SBATCH -e logs/II_%j.err
+#SBATCH -N 2
+#SBATCH -c 20
 #SBATCH --mem=32G
 #SBATCH --mail-type=END
 #SBATCH --mail-user=rotem.ovadia@mail.huji.ac.il
