@@ -1,7 +1,7 @@
 % clc;clearvars;close all
+home
 
-genpath(fullfile(home,'..','lib'))
-addpath(genpath(fullfile(home,'..','lib')))
+addpath(genpath(fullfile(cd,'..','lib')));
 
 %%
 if exist(fullfile(home,'reg_shifts.mat'),'file')
@@ -23,7 +23,7 @@ if exist(fullfile(home,'reg_shifts.mat'),'file')
             exit;
         end
     end
-    fullfile(output,'denoised.tif')
+    fullfile(output,'denoised.tif');
     tic;
     mov = shiftdim(loadtiff(fullfile(output,'denoised.tif')),2);
     [ySize, xSize, nFrames] = size(mov);

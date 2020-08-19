@@ -8,7 +8,7 @@ function main = main(data_dir, program_dir)
     harvard_cannon = 0;
     % home = fullfile(cd, data_dir);
     % home = fullfile(cd,'..','demo_data');
-    home = data_dir
+    home = data_dir;
 
     output = fullfile(home,'output');
     plots = fullfile(home, 'plots');
