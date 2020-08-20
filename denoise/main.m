@@ -16,13 +16,15 @@ function main = main(data_dir, file_name)
 
     if ~exist(output,'dir')
         mkdir(output)
+        disp('Made output directory')
     end
 
     if ~exist(plots,'dir')
         mkdir(plots)
+        disp('Made plots directory')
     end
 
-    [fp,n,ext] = fileparts(filename)
+    [fp,n,ext] = fileparts(file_name)
     if strcomp(ext,'tif')
     %% NoRMCorre image registration
         mov=loadtiff(fullfile(home, file_name));
@@ -42,7 +44,7 @@ function main = main(data_dir, file_name)
         % TODO: Add normcorre on bin files
         mov_in = "movReg.bin"
     else
-        print("Unsupported format, terminating")
+        disp("Unsupported format, terminating")
         exit
     end
 
