@@ -25,7 +25,7 @@ function main = main(data_dir, file_name)
     end
 
     [fp,n,ext] = fileparts(file_name)
-    if strcomp(ext,'tif')
+    if strcmp(ext,'tif')
     %% NoRMCorre image registration
         mov=loadtiff(fullfile(home, file_name));
         [nrows, ncols, nframes] = size(mov);
