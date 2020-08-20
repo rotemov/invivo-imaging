@@ -82,8 +82,9 @@ function main = main(data_dir, file_name)
         moco_command = sprintf("matlab -nojvm -nodisplay -nosplash -r ""home='%s';output='%s';motion_correction""",...
             home,output);
     end
-
+    disp("Motion correction started")
     system(moco_command);
+    disp("Motion correction done")
 
     %% blood removal
     if GUI
