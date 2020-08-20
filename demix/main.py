@@ -257,8 +257,8 @@ if GUI:
 # TODO: Add input from user for good / bad cells
 
 # rank of background to model, if none selected
-bg_rank = 3
-final_cells = [0, 1, 3, 6]
+bg_rank = 2
+final_cells = [0, 1]
 
 nCells = len(final_cells)
 
