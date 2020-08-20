@@ -1,7 +1,8 @@
 function main = main(data_dir, file_name)
     %% Initialization
     GUI = 0;
-
+    data_dir
+    file_name
     genpath(fullfile(cd,'..','lib'))
     addpath(genpath(fullfile(cd,'..','lib')));
 
@@ -21,20 +22,30 @@ function main = main(data_dir, file_name)
         mkdir(plots)
     end
 
+    [fp,n,ext] = fileparts(filename)
+    if ext = '.tif'
     %% NoRMCorre image registration
-    mov=loadtiff(fullfile(home, file_name));
-    [nrows, ncols, nframes] = size(mov);
-    movReg=NoRMCorre2(mov,home); % get registered movie
-    clear mov
-    saveastiff(movReg,fullfile(home,'movReg.tif')); % save registered movie
-    clear movReg
+        mov=loadtiff(fullfile(home, file_name));
+        [nrows, ncols, nframes] = size(mov);
+        movReg=NoRMCorre2(mov,home); % get registered movie
+        clear mov
+        saveastiff(movReg,fullfile(home,'movReg.tif')); % save registered movie
+        clear movReg
 
-    % extract motion traces into MAT file
-    reg_shifts = returnShifts(home);
-    save(fullfile(home,'reg_shifts.mat'),'reg_shifts');
+        % extract motion traces into MAT file
+        reg_shifts = returnShifts(home);
+        save(fullfile(home,'reg_shifts.mat'),'reg_shifts');
 
-    %% denoising parameters
-    mov_in = "movReg.tif";
+        %% denoising parameters
+        mov_in = "movReg.tif";
+    elseif ext = '.bin'
+        % TODO: Add normcorre on bin files
+        mov_in = "movReg.bin"
+    else
+        print("Unsupported format, terminating")
+        exit
+    end
+
     detr_spacing = 5000; % in number of frames
     row_blocks = 4;
     col_blocks = 2;

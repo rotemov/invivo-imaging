@@ -1,5 +1,5 @@
 % clc;clearvars;close all
-home
+moco_home = home
 
 addpath(genpath(fullfile(cd,'..','lib')));
 
