@@ -23,7 +23,7 @@ function main = main(data_dir, file_name)
     end
 
     [fp,n,ext] = fileparts(filename)
-    if ext = '.tif'
+    if strcomp(ext,'tif')
     %% NoRMCorre image registration
         mov=loadtiff(fullfile(home, file_name));
         [nrows, ncols, nframes] = size(mov);
@@ -38,7 +38,7 @@ function main = main(data_dir, file_name)
 
         %% denoising parameters
         mov_in = "movReg.tif";
-    elseif ext = '.bin'
+    elseif strcmp(ext,'.bin')
         % TODO: Add normcorre on bin files
         mov_in = "movReg.bin"
     else
