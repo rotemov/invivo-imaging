@@ -42,7 +42,7 @@ function main = main(data_dir, file_name)
         mov_in = "movReg.tif";
     elseif strcmp(ext,'.bin')
         % TODO: Add normcorre on bin files
-        mov_in = "movReg.bin"
+        mov_in = file_name;
     else
         disp("Unsupported format, terminating")
         exit
