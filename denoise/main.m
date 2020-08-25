@@ -79,8 +79,6 @@ function main = main(data_dir, file_name)
         moco_command = sprintf("sbatch motion_correction.run ""%s"" ""%s""",...
             home,output);
     else % general command
-        output
-        home
         moco_command = sprintf("matlab -nojvm -nodisplay -nosplash -r ""home='%s';output='%s';motion_correction""",...
             home,output);
     end
