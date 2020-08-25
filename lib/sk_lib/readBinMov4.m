@@ -26,7 +26,7 @@ elseif isfile(fullfile(BinDir,'camera-parameters-Flash.txt'))
         nrows = mov_params(3);
         ncols = mov_params(4);
     catch me
-        fclos(fid1);
+        fclose(fid1);
         rethrow(me);
     end
 % if not given a proper file
