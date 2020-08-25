@@ -29,7 +29,7 @@ function main = main(data_dir, file_name)
     %% NoRMCorre image registration
         mov = loadtiff(fullfile(home, file_name));
     elseif strcmp(ext,'.bin')
-        [mov, nr, nc] = readBinMov4(home, n, 0)
+        [mov, nr, nc] = readBinMov4(home, n, 0);
     else
         disp("Unsupported format, terminating")
         exit
