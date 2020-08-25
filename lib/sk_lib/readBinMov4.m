@@ -22,7 +22,7 @@ elseif isfile(fullfile(BinDir,'camera-parameters-Flash.txt'))
     try
         fid1 = fopen(fullfile(BinDir,'camera-parameters-Flash.txt'));
         line_num = 5;
-        mov_params = textscan(fid1,'%f',4,'delimiter','\n', 'headerlines',linenum-1);
+        mov_params = textscan(fid1,'%f',4,'delimiter','\n', 'headerlines',line_num-1);
         nrows = mov_params(3);
         ncols = mov_params(4);
     catch me
