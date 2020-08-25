@@ -27,27 +27,27 @@ function main = main(data_dir, file_name)
     [fp,n,ext] = fileparts(file_name)
     if strcmp(ext,'tif')
     %% NoRMCorre image registration
-        mov=loadtiff(fullfile(home, file_name));
-        [nrows, ncols, nframes] = size(mov);
-        movReg=NoRMCorre2(mov,home); % get registered movie
-        clear mov
-        saveastiff(movReg,fullfile(home,'movReg.tif')); % save registered movie
-        clear movReg
-
-        % extract motion traces into MAT file
-        reg_shifts = returnShifts(home);
-        save(fullfile(home,'reg_shifts.mat'),'reg_shifts');
-
-        %% denoising parameters
-        mov_in = "movReg.tif";
+        mov = loadtiff(fullfile(home, file_name));
     elseif strcmp(ext,'.bin')
-        % TODO: Add normcorre on bin files
-        mov_in = file_name;
+        [mov, nr, nc] = readBinMov4(home, n)
     else
         disp("Unsupported format, terminating")
         exit
     end
+    [nrows, ncols, nframes] = size(mov);
+    movReg = NoRMCorre2(mov,home); % get registered movie
+    clear mov
+    saveastiff(movReg,fullfile(home,'movReg.tif')); % save registered movie
+    clear movReg
 
+    pack
+
+    % extract motion traces into MAT file
+    reg_shifts = returnShifts(home);
+    save(fullfile(home,'reg_shifts.mat'),'reg_shifts');
+
+    %% denoising parameters
+    mov_in = "movReg.tif";
     detr_spacing = 5000; % in number of frames
     row_blocks = 4;
     col_blocks = 2;
@@ -70,6 +70,8 @@ function main = main(data_dir, file_name)
     %         trunc_start-1, trunc_length, stim_dir);
     end
 
+    pack
+
     system(run_command);
 
     %% motion correction
@@ -85,6 +87,8 @@ function main = main(data_dir, file_name)
     disp("Motion correction started")
     system(moco_command);
     disp("Motion correction done")
+
+    pack
 
     %% blood removal
     if GUI

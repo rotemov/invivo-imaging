@@ -1,19 +1,38 @@
 %load a Bin movie using the info file to get the size.
 %No default Bin file name, imput the BinName
-function [mov, nrow, ncol]=readBinMov4(BinDir, BinName,flipflg)
+function [mov, nrow, ncol]=readBinMov4(BinDir, BinName, flipflg)
 tic
 clc;
 disp(['Loading movie from ' BinDir '...']);
-% get the frame size
-try 
-    fid1 = fopen(fullfile(BinDir,'experimental_parameters.txt'));
-    Info=textscan(fid1,'%s');
-    nrow = str2num(Info{1,1}{6,1});
-    ncol = str2num(Info{1,1}{3,1});
-    fclose(fid1);
-catch me
-    fclose(fid1);
-    rethrow(me);
+
+% old file format
+if isfile()
+    try
+        fid1 = fopen(fullfile(BinDir,'experimental_parameters.txt'));
+        Info=textscan(fid1,'%s');
+        nrow = str2num(Info{1,1}{6,1});
+        ncol = str2num(Info{1,1}{3,1});
+        fclose(fid1);
+    catch me
+        fclose(fid1);
+        rethrow(me);
+    end
+% read from new file
+elseif isfile(fullfile(BinDir,'camera-parameters-Flash.txt'))
+    try
+        fid1 = fopen(fullfile(BinDir,'camera-parameters-Flash.txt'));
+        line_num = 5;
+        mov_params = textscan(fid1,'%f',4,'delimiter','\n', 'headerlines',linenum-1);
+        nrows = mov_params(3);
+        ncols = mov_params(4);
+    catch me
+        fclos(fid1);
+        rethrow(me);
+    end
+% if not given a proper file
+else
+    ME = MException('Unsupported camera parameter file:noSuchFile', 'Only camera-parameters-Flash.txt or experimental_parameters.txt supported.');
+    throw(ME)
 end
 
 try
