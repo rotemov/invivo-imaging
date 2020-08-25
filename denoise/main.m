@@ -1,5 +1,6 @@
 function main = main(data_dir, file_name)
-    %% Initialization
+    % Initialization
+    
     GUI = 0;
     data_dir
     file_name
@@ -23,10 +24,12 @@ function main = main(data_dir, file_name)
         mkdir(plots)
         disp('Made plots directory')
     end
+    
+    % NoRMCorre image registration
 
     [fp,n,ext] = fileparts(file_name)
     if strcmp(ext,'tif')
-    %% NoRMCorre image registration
+
         mov = loadtiff(fullfile(home, file_name));
     elseif strcmp(ext,'.bin')
         [mov, nr, nc] = readBinMov4(home, n, 0);
@@ -46,7 +49,7 @@ function main = main(data_dir, file_name)
     reg_shifts = returnShifts(home);
     save(fullfile(home,'reg_shifts.mat'),'reg_shifts');
 
-    %% denoising parameters
+    % denoising parameters
     mov_in = "movReg.tif";
     detr_spacing = 5000; % in number of frames
     row_blocks = 4;
@@ -56,13 +59,13 @@ function main = main(data_dir, file_name)
     trunc_start = 1; % frame to start denoising
     trunc_length = 5000; % length of movie segment to denoise on
 
-    %% denoising
+    % denoising
     if harvard_cannon % command for Harvard Cannon cluster
         run_command = sprintf("source setup.sh\n sbatch denoise.run ""%s"" ""%s"" ""%s"" %d %d %d %d %d ""%s""",...
             home, mov_in, output, detr_spacing, row_blocks, col_blocks,...
             trunc_start-1, trunc_length, stim_dir);
     else % general command
-        run_command = sprintf("source ~/Programs/invivo-imaging/activate_invivo.sh\n python denoise.py ""%s"" ""%s"" ""%s"" %d %d %d %d %d ""%s""",...
+        run_command = sprintf("source ~/Programs/invivo-imaging/activate_invivo.sh\n TR ""%s"" ""%s"" ""%s"" %d %d %d %d %d ""%s""",...
             home, mov_in, output, detr_spacing, row_blocks, col_blocks,...
             trunc_start-1, trunc_length, stim_dir);
     %     run_command = sprintf("source ~/intel/parallel_studio_xe_2020.2.108/bin/psxevars.sh\n source ~/.bashrc\n source ~/anaconda3/bin/activate invivo\n python denoise.py ""%s"" ""%s"" ""%s"" %d %d %d %d %d ""%s""",...
