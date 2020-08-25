@@ -8,15 +8,7 @@
 #SBATCH --mem=128G
 #SBATCH --mail-type=END
 #SBATCH --mail-user=rotem.ovadia@mail.huji.ac.il
-#SBATCH --export=DATA="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/two_cells/cell2"
-#SBATCH --export=FN="cell2.bin"
-#SBATCH --export=MOV_IN="movReg.tif"
-#SBATCH --export=DETR_SPACING=5000
-#SBATCH --export=ROW_BLOCKS=4
-#SBATCH --export=COL_BLOCKS=2
-#SBATCH --export=STIM_DIR=""
-#SBATCH --export=TRUNC_START=1
-#SBATCH --export=TRUNC_LENGTH=5000
+#SBATCH --export=DATA="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/two_cells/cell2",FN="cell2.bin",MOV_IN="movReg.tif",DETR_SPACING=5000,ROW_BLOCKS=4,COL_BLOCKS=2,STIM_DIR="",TRUNC_START=1,TRUNC_LENGTH=5000
 
 
 cd denoise
