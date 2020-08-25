@@ -21,10 +21,10 @@ if isfile(fullfile(BinDir,'experimental_parameters.txt'))
 elseif isfile(fullfile(BinDir,'camera-parameters-Flash.txt'))
     try
         fid1 = fopen(fullfile(BinDir,'camera-parameters-Flash.txt'));
-        line_num = 5;
-        mov_params = textscan(fid1,'%f',4,'delimiter','\n', 'headerlines',line_num-1);
-        nrows = mov_params(3);
-        ncols = mov_params(4);
+        Info=textscan(fid1,'%s');
+        nrow = str2num(Info{1,1}{7,1});
+        ncol = str2num(Info{1,1}{8,1});
+        fclose(fid1);
     catch me
         fclose(fid1);
         rethrow(me);
