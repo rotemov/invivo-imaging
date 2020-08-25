@@ -39,6 +39,7 @@ function [] = main_bash(data_dir, file_name)
     end
     [nrows, ncols, nframes] = size(mov);
     movReg = NoRMCorre2(mov,home); % get registered movie
+    disp("NoRMCorre done, saving outputs")
     clear mov
     saveastiff(movReg,fullfile(home,'movReg.tif')); % save registered movie
     clear movReg
@@ -48,4 +49,5 @@ function [] = main_bash(data_dir, file_name)
     % extract motion traces into MAT file
     reg_shifts = returnShifts(home);
     save(fullfile(home,'reg_shifts.mat'),'reg_shifts');
+    disp("Saving done")
 end
