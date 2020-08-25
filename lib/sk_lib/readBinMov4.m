@@ -6,7 +6,7 @@ clc;
 disp(['Loading movie from ' BinDir '...']);
 
 % old file format
-if isfile()
+if isfile(fullfile(BinDir,'experimental_parameters.txt'))
     try
         fid1 = fopen(fullfile(BinDir,'experimental_parameters.txt'));
         Info=textscan(fid1,'%s');
