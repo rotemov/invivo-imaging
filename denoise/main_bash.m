@@ -28,7 +28,7 @@ function [] = main_bash(data_dir, file_name)
     % NoRMCorre image registration
 
     [fp,n,ext] = fileparts(file_name)
-    if strcmp(ext,'tif')
+    if strcmp(ext,'.tif')
 
         mov = loadtiff(fullfile(home, file_name));
     elseif strcmp(ext,'.bin')
