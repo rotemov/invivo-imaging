@@ -11,7 +11,7 @@
 #SBATCH --export=DATA="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/demo_data",FN="raw_data.tif",MOV_IN="movReg.tif",DETR_SPACING=5000,ROW_BLOCKS=4,COL_BLOCKS=2,STIM_DIR="",TRUNC_START=1,TRUNC_LENGTH=5000
 
 OUTPUT=$DATA"/output"
-echo OUTPUT
+echo $OUTPUT
 
 cd denoise
 matlab -batch "main_bash('"$DATA"','"$FN"'); exit"
