@@ -10,4 +10,5 @@ window = sg.Window('Get filename example', layout)
 
 event, values = window.read()
 window.close()
+print("Done")
 
