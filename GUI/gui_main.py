@@ -1,57 +1,47 @@
 #!/usr/bin/env python
-import sys
 import PySimpleGUI as sg
-# import PySimpleGUIWeb as sg
 
-# Usage of Tabs in PSG
-#
-# sg.set_options(background_color='cornsilk4',
-#         element_background_color='cornsilk2',
-#         input_elements_background_color='cornsilk2')
+# Simple example of TabGroup element and the options available to it
 
-sg.theme('Light Green 5')
+sg.theme('Dark Blue')  # Please always add color to your window
 
-tab1_layout = [[sg.Text('This is inside tab 1', background_color='darkslateblue', text_color='white')],
-               [sg.Input(key='-in0-')]]
+# The tab 1, 2, 3 layouts - what goes inside the tab
+main_runner = [
+    [sg.Text('Movie file:', size=(15, 1)), sg.InputText(key='-input_file-'), sg.FileBrowse()],
+    [sg.Text('Input something'), sg.Input(size=(12, 1), key='-IN-TAB1-')]
+    ]
 
-tab2_layout = [[sg.Text('This is inside tab 2', background_color='tan1')],
-               [sg.Input(key='-in2-')]]
+advanced_params = [[sg.Text('Advanced Parameters')]]
 
-
-tab3_layout = [[sg.Text('This is inside tab 3')],
-               [sg.Input(key='-in2-')]]
-
-tab4_layout = [[sg.Text('This is inside tab 4', background_color='darkseagreen')],
-               [sg.Input(key='-in3-')]]
-
-tab5_layout = [[sg.Text('This is inside tab 5')],
-               [sg.Input(key='-in4-')]]
+outputs = [[sg.Text('Outputs')]]
 
 
-layout = [[sg.TabGroup([[sg.Tab('Tab 1', tab1_layout, background_color='darkslateblue', key='-mykey-'),
-                         sg.Tab('Tab 2', tab2_layout, background_color='tan1'),
-                         sg.Tab('Tab 3', tab3_layout)]],
-                       key='-group2-', title_color='red',
-                       selected_title_color='green', tab_location='right'),
-           sg.TabGroup([[sg.Tab('Tab 4', tab4_layout, background_color='darkseagreen', key='-mykey-'),
-                         sg.Tab('Tab 5', tab5_layout)]], key='-group1-', tab_location='top', selected_title_color='purple')],
-          # [sg.TabGroup([[sg.Tab('Tab 1', tab1_layout, background_color='darkslateblue', key='-mykey-'),
-          #                sg.Tab('Tab 2', tab2_layout, background_color='tan1'),
-          #                sg.Tab('Tab 3', tab3_layout)]],
-          #              key='-group3-', title_color='red',
-          #              selected_title_color='green', tab_location='left'),
-          #  sg.TabGroup([[sg.Tab('Tab 4', tab4_layout, background_color='darkseagreen', key='-mykey-'),
-          #                sg.Tab('Tab 5', tab5_layout)]], key='-group4-', tab_location='bottom', selected_title_color='purple')],
-          [sg.Button('Read')]]
+# The TabgGroup layout - it must contain only Tabs
+tab_group_layout = [[sg.Tab('Main Runner', main_runner, font='Courier 15', key='-MR-'),
+                     sg.Tab('Advanced Parameters', advanced_params, key='-AP-'),
+                     sg.Tab('Outputs', outputs, key='-OUT-')]]
 
-window = sg.Window('My window with tabs', layout,
-                   default_element_size=(12, 1))
+# The window layout - defines the entire window
+layout = [[sg.TabGroup(tab_group_layout,
+                       enable_events=True,
+                       key='-TABGROUP-')],
+          [sg.Text('Make tab number'), sg.Input(key='-IN-', size=(3, 1)), sg.Button('Invisible'), sg.Button('Visible'),
+           sg.Button('Select')]]
 
+window = sg.Window('My window with tabs', layout, no_titlebar=False)
 
+tab_keys = ('-TAB1-', '-TAB2-', '-TAB3-')  # map from an input value to a key
 while True:
-    event, values = window.read()
-    sg.popup_non_blocking(event, values)
+    event, values = window.read()  # type: str, dict
     print(event, values)
-    if event == sg.WIN_CLOSED:           # always,  always give a way out!
+    if event == sg.WIN_CLOSED:
         break
+    # handle button clicks
+    if event == 'Invisible':
+        window[tab_keys[int(values['-IN-']) - 1]].update(visible=False)
+    if event == 'Visible':
+        window[tab_keys[int(values['-IN-']) - 1]].update(visible=True)
+    if event == 'Select':
+        window[tab_keys[int(values['-IN-']) - 1]].select()
+
 window.close()
