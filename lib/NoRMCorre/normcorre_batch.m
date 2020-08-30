@@ -398,7 +398,7 @@ for it = 1:iter
         end
         
         % update template
-        fprintf('%i out of %i frames registered, iteration %i out of %i \n',t+lY-1,T,it,iter)
+        % fprintf('%i out of %i frames registered, iteration %i out of %i \n',t+lY-1,T,it,iter)
         if upd_template
             cnt_buf = cnt_buf + 1;
             if nd == 2; buffer = mat2cell_ov(Mf,xx_s,xx_f,yy_s,yy_f,zz_s,zz_f,overlap_pre,sizY); end
