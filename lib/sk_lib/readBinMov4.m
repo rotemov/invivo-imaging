@@ -22,8 +22,8 @@ elseif isfile(fullfile(BinDir,'camera-parameters-Flash.txt'))
     try
         fid1 = fopen(fullfile(BinDir,'camera-parameters-Flash.txt'));
         Info=textscan(fid1,'%s');
-        nrow = str2num(Info{1,1}{7,1});
-        ncol = str2num(Info{1,1}{8,1});
+        ncol = str2num(Info{1,1}{7,1});
+        nrow = str2num(Info{1,1}{8,1});
         fclose(fid1);
     catch me
         fclose(fid1);

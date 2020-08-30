@@ -166,5 +166,7 @@ dependencies:
   - zipp=3.1.0=py_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.5=h6597ccf_2
+  - pip:
+    - pysimplegui==4.29.0
 prefix: /home/rotemov/anaconda3/envs/invivo
 
