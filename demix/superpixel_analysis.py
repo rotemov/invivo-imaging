@@ -2466,6 +2466,7 @@ def axon_pipeline_Y(Yd, fb_ini=False, ff_ini=False, cut_off_point=[0.95,0.9], le
 			down=min(up+patch_height, dims[0]);
 			left=pos[1][0]*patch_width;
 			right=min(left+patch_width, dims[1]);
+			print(up, down, left, right)
 			unique_pix_temp, M = search_superpixel_in_range((connect_mat_1.reshape(dims[0],int(dims[1]/num_plane),num_plane,order="F"))[up:down,left:right], permute_col, c_ini);
 			pure_pix_temp = fast_sep_nmf(M, M.shape[1], residual_cut[ii]);
 			if len(pure_pix_temp)>0:
