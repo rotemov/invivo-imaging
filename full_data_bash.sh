@@ -29,6 +29,6 @@ python denoise.py "$DATA" "$MOV_IN" "$OUTPUT" "$DETR_SPACING" "$ROW_BLOCKS" "$CO
 matlab -batch "motion_correction('"$DATA"','"$OUTPUT"'); exit"
 echo "Denoising done"
 cd ../demix
-python main.py "$DATA" "$CUTOFF_POINT" "$CORR_TH_FIX"
+python main.py "$DATA" "$CUTOFF_POINT" "$CORR_TH_FIX" "$PATCH_SIZE"
 echo "Demixing done"
 
