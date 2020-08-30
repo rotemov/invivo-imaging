@@ -14,7 +14,8 @@ sys.path.append(os.getcwd())
 
 # ## Read in movie
 data_dir = sys.argv[1]
-cut_off_point = sys.argv[2]
+cut_off_point = float(sys.argv[2])
+corr_th_fix = float(sys.argv[3])
 
 
 print("Demixing Start")
@@ -162,7 +163,7 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
                           ##### Cell-finding, NMF parameters
                           # correlation threshold of pixel with superpixel trace to include pixel in cell
                           # (range 0.3-0.6)
-                          corr_th_fix=0.4,
+                          corr_th_fix=corr_th_fix,
 
                           # correlation threshold for merging two cells
                           # (default 0.8, but likely don't need to change)

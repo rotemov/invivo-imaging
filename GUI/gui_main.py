@@ -7,19 +7,23 @@ sg.theme('Dark Blue')  # Please always add color to your window
 
 # The tab 1, 2, 3 layouts - what goes inside the tab
 main_runner = [
-    [sg.Text('Movie file:', size=(15, 1)), sg.InputText(key='-input_file-'), sg.FileBrowse()],
-    [sg.Text('Input something'), sg.Input(size=(12, 1), key='-IN-TAB1-')]
+    [sg.Text('Movie file:', size=(15, 1)), sg.InputText(key='input_file'), sg.FileBrowse()],
+    [sg.Text('Cut off threshold %'), sg.Slider(range=(80, 95), orientation='h', size=(34, 20), key='cut_off_threshold', default_value=90)],
+    [sg.Text('Correlation threshold fix %'), sg.Slider(range=(30, 60), orientation='h', size=(34, 20), key='cut_off_threshold', default_value=45)]
     ]
 
-advanced_params = [[sg.Text('Advanced Parameters')]]
+advanced_params = [
+    [sg.Text('Advanced Parameters')]
+
+]
 
 outputs = [[sg.Text('Outputs')]]
 
 
 # The TabgGroup layout - it must contain only Tabs
-tab_group_layout = [[sg.Tab('Main Runner', main_runner, font='Courier 15', key='-MR-'),
-                     sg.Tab('Advanced Parameters', advanced_params, key='-AP-'),
-                     sg.Tab('Outputs', outputs, key='-OUT-')]]
+tab_group_layout = [[sg.Tab('Main Runner', main_runner, font='Courier 15', key='tab_main_runner'),
+                     sg.Tab('Advanced Parameters', advanced_params, key='tab_advanced_parameters'),
+                     sg.Tab('Outputs', outputs, key='tab_outputs')]]
 
 # The window layout - defines the entire window
 layout = [[sg.TabGroup(tab_group_layout,
