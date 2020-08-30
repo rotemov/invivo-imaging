@@ -14,6 +14,9 @@ sys.path.append(os.getcwd())
 
 # ## Read in movie
 data_dir = sys.argv[1]
+cut_off_point = sys.argv[2]
+
+
 print("Demixing Start")
 print(data_dir)
 
@@ -138,7 +141,7 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
 
                           # correlation threshold for finding superpixels
                           # (range around 0.8-0.99)
-                          cut_off_point=[0.95],
+                          cut_off_point=[cut_off_point],
 
                           # minimum pixel count of a superpixel
                           # don't need to change these unless cell sizes change
