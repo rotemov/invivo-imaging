@@ -16,7 +16,7 @@ sys.path.append(os.getcwd())
 data_dir = sys.argv[1]
 cut_off_point = float(sys.argv[2])
 corr_th_fix = float(sys.argv[3])
-
+patch_size_edge = float(sys.argv[4])
 
 print("Demixing Start")
 print(data_dir)
@@ -31,7 +31,7 @@ path = data_dir + '/output'
 
 def save_plot(name):
     plt.savefig(PLOT_PATH + name + '.png')
-    print("Plot saved: "+name+".png")
+    print("Plot saved: " + name + ".png")
     if GUI:
         plt.show()
 
@@ -152,7 +152,7 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
                           # don't need to change these unless cell sizes change
                           length_max=[1000],
 
-                          patch_size=[30, 30],
+                          patch_size=[patch_size_edge, patch_size_edge],
 
                           # correlation threshold between superpixels for merging
                           # likely don't need to change this
