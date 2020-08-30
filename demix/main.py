@@ -16,7 +16,7 @@ sys.path.append(os.getcwd())
 data_dir = sys.argv[1]
 cut_off_point = float(sys.argv[2])
 corr_th_fix = float(sys.argv[3])
-patch_size_edge = float(sys.argv[4])
+patch_size_edge = int(sys.argv[4])
 
 print("Demixing Start")
 print(data_dir)
