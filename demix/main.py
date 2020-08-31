@@ -13,7 +13,7 @@ import util_plot
 sys.path.append(os.getcwd())
 
 # ## Read in movie
-data_dir = sys.argv[1]
+data_dir =str(sys.argv[1])
 cut_off_point = float(sys.argv[2])
 corr_th_fix = float(sys.argv[3])
 patch_size_edge = int(sys.argv[4])
@@ -233,6 +233,8 @@ cell_ct = rlt["fin_rlt"]["c"].shape[1]
 plt.figure(figsize=(25, 3 * cell_ct))
 
 ref_im = np.std(movB, axis=2).transpose(1, 0)
+
+print("num_cells: " + cell_ct)
 
 for cell_num in range(cell_ct):
     plt.subplot(cell_ct, 2, 2 * cell_num + 1)
