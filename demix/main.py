@@ -234,7 +234,10 @@ plt.figure(figsize=(25, 3 * cell_ct))
 
 ref_im = np.std(movB, axis=2).transpose(1, 0)
 
-print("num_cells: " + cell_ct)
+print("ref im shape: " + str(ref_im.shape))
+print("ref im flatten: " + str(np.percentile(ref_im.flatten(), [1, 99])))
+print("num_cells: " + str(cell_ct))
+print("rlt: " + rlt)
 
 for cell_num in range(cell_ct):
     plt.subplot(cell_ct, 2, 2 * cell_num + 1)
@@ -247,6 +250,9 @@ for cell_num in range(cell_ct):
 
     cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(movB.shape[1], movB.shape[0])  # .transpose(1,0)
     cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
+
+    print("Cell #" + str(cell_num) + " loc: "+ str(cell_loc))
+
     plt.imshow(cell_loc, cmap='jet', alpha=0.5)
 
 save_plot('NMF_Traces')
