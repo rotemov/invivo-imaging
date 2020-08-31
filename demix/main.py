@@ -129,8 +129,8 @@ if bg_flag:
 start = time.time()
 
 # select which window to demix on
-first_frame = 1
-last_frame = 5000
+first_frame = 1000
+last_frame = 14000
 
 movHP = sup.hp_filt_data(movB, spacing=10)
 
@@ -146,7 +146,7 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
 
                           # minimum pixel count of a superpixel
                           # don't need to change these unless cell sizes change
-                          length_cut=[10],
+                          length_cut=[int(patch_size_edge/3)],
 
                           # maximum pixel count of a superpixel
                           # don't need to change these unless cell sizes change
@@ -158,7 +158,7 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
                           # likely don't need to change this
                           residual_cut=[np.sqrt(1 - (0.8) ** 2)],
 
-                          pass_num=1, bg=False,
+                          pass_num=3, bg=False,
 
                           ##### Cell-finding, NMF parameters
                           # correlation threshold of pixel with superpixel trace to include pixel in cell
