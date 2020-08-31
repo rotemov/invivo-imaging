@@ -150,7 +150,7 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
 
                           # maximum pixel count of a superpixel
                           # don't need to change these unless cell sizes change
-                          length_max=[1000],
+                          length_max=[patch_size_edge**2],
 
                           patch_size=[patch_size_edge, patch_size_edge],
 
@@ -226,7 +226,6 @@ for p in range(num_pass):
 
 # In[19]:
 
-
 # plot all cell traces and footprints from NMF
 cell_ct = rlt["fin_rlt"]["c"].shape[1]
 
@@ -270,7 +269,7 @@ if GUI:
 
 # rank of background to model, if none selected
 bg_rank = 2
-final_cells = [0, 1]
+final_cells = [0]
 
 nCells = len(final_cells)
 
