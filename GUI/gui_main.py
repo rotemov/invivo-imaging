@@ -35,11 +35,13 @@ def convert_to_bytes(file_or_bytes, resize=None):
     return bio.getvalue()
 
 
-def load_picture_on_canvas(graph, im_name):
-    if os.path.exists(im_name):
-        blob2 = convert_to_bytes(im_name, IM_SIZE)
+def load_picture_on_canvas(values, graph, im_name):
+    im_full = os.path.join(values['output_dir'], im_name)
+    print(im_full)
+    if os.path.exists(im_full):
+        im_bin = convert_to_bytes(im_full, IM_SIZE)
         graph.delete_figure("all")
-        graph.draw_image(data=blob2, location=(0, IM_SIZE[1]))
+        graph.draw_image(data=im_bin, location=(0, IM_SIZE[1]))
         print(im_name + " loaded")
     else:
         print("Still running")
@@ -48,11 +50,14 @@ def load_picture_on_canvas(graph, im_name):
 
 # Simple example of TabGroup element and the options available to it
 
-sg.theme('Dark Blue')  # Please always add color to your window
+
+sg.theme('Reddit')  # Please always add color to your window
+
 
 # The tab 1, 2, 3 layouts - what goes inside the tab
 main_runner = [
     [sg.Text('Movie file:', size=(15, 1)), sg.InputText(key='input_file'), sg.FileBrowse()],
+    [sg.Text('Output directory:', size=(15, 1)), sg.InputText(key='output_dir'), sg.FolderBrowse()],
     [sg.Text('Cut off threshold %', size=(15, 1)),
      sg.Slider(range=(80, 95), orientation='h', size=(34, 20), key='cut_off_threshold', default_value=90)],
     [sg.Text('Correlation threshold fix %', size=(20, 1)),
@@ -84,7 +89,7 @@ tab_group_layout = [[sg.Tab('Main Runner', main_runner, font='Courier 15', key='
 # The window layout - defines the entire window
 layout = [
     [sg.TabGroup(tab_group_layout, enable_events=True, key='-TABGROUP-')],
-    [sg.Button('Run'), sg.Button('Help'), sg.Button('Load outputs'), sg.Button('blob2'), sg.Button('Quit')]
+    [sg.Button('Run'), sg.Button('Help'), sg.Button('Load NMF_Traces'), sg.Button('Load super pixels'), sg.Button('Quit')]
     ]
 
 window = sg.Window('Invivo imaging - Adam Lab - ver0.0', layout, no_titlebar=False)
@@ -100,12 +105,12 @@ while True:
         print("Running script activated")
     if event == 'Help':
         print("Link to github appeared")
-    if event == 'Load outputs':
-        print('Loading traces')
-        load_picture_on_canvas(graph, 'blob.png')
-    if event == 'blob2':
-        print('blob2')
-        load_picture_on_canvas(graph, 'blob_2.png')
+    if event == 'Load NMF_Traces':
+        print('Traces')
+        load_picture_on_canvas(values, graph, 'NMF_Traces.png')
+    if event == 'Load super pixels':
+        print('Super pixels')
+        load_picture_on_canvas(values, graph, 'super_pixels.png')
 
 
 window.close()
