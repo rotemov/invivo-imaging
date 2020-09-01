@@ -11,6 +11,7 @@ main_runner = [
     [sg.Text('Cut off threshold %'), sg.Slider(range=(80, 95), orientation='h', size=(34, 20), key='cut_off_threshold', default_value=90)],
     [sg.Text('Correlation threshold fix %'), sg.Slider(range=(30, 60), orientation='h', size=(34, 20), key='corr_th_fix', default_value=45)],
     [sg.Text('Start frame', size=(15, 1)), sg.In(default_text='1', size=(10, 1)), sg.Text('Number of frames', size=(15, 1)), sg.In(default_text='5000', size=(10, 1))],
+    [sg.Text('Min cell size (in pixels)', size=(15, 1)), sg.In(default_text='10', size=(10, 1)), sg.Text('Max cell size', size=(15, 1)), sg.In(default_text='1000', size=(10, 1))],
     [sg.Checkbox('Quick run', size=(12, 1), default=False)]
     ]
 
@@ -31,23 +32,20 @@ tab_group_layout = [[sg.Tab('Main Runner', main_runner, font='Courier 15', key='
 layout = [[sg.TabGroup(tab_group_layout,
                        enable_events=True,
                        key='-TABGROUP-')],
-          [sg.Text('Make tab number'), sg.Input(key='-IN-', size=(3, 1)), sg.Button('Invisible'), sg.Button('Visible'),
-           sg.Button('Select')]]
+          [sg.Button('Run'), sg.Button('Help'), sg.Button('Quit')]]
 
 window = sg.Window('My window with tabs', layout, no_titlebar=False)
 
-tab_keys = ('-TAB1-', '-TAB2-', '-TAB3-')  # map from an input value to a key
+# tab_keys = ('-TAB1-', '-TAB2-', '-TAB3-')  # map from an input value to a key
 while True:
     event, values = window.read()  # type: str, dict
     print(event, values)
-    if event == sg.WIN_CLOSED:
+    if event == sg.WIN_CLOSED or event == 'Quit':
         break
     # handle button clicks
-    if event == 'Invisible':
-        window[tab_keys[int(values['-IN-']) - 1]].update(visible=False)
+    if event == 'Run':
+        print("Running script activated")
     if event == 'Visible':
-        window[tab_keys[int(values['-IN-']) - 1]].update(visible=True)
-    if event == 'Select':
-        window[tab_keys[int(values['-IN-']) - 1]].select()
+        print("Link to github appeared")
 
 window.close()

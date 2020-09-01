@@ -2459,7 +2459,7 @@ def axon_pipeline_Y(Yd, fb_ini=False, ff_ini=False, cut_off_point=[0.95,0.9], le
 		pure_pix = [];
 		
 		start = time.time();
-		print("find pure superpixels!")
+		print("Find pure superpixels! Number of patches: " + str(num_patch))
 		for kk in range(num_patch):
 			pos = np.where(patch_ref_mat==kk);
 			up=pos[0][0]*patch_height;

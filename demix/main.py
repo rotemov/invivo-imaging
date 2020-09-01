@@ -150,7 +150,7 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
 
                           # maximum pixel count of a superpixel
                           # don't need to change these unless cell sizes change
-                          length_max=[patch_size_edge**2],
+                          length_max=[patch_size_edge**3],
 
                           patch_size=[patch_size_edge, patch_size_edge],
 
