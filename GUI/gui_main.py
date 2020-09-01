@@ -1,6 +1,50 @@
 #!/usr/bin/env python
 import PySimpleGUI as sg
 import os
+import PIL
+from PIL import Image
+import io
+import base64
+
+IM_SIZE = (800, 600)
+
+
+def convert_to_bytes(file_or_bytes, resize=None):
+    '''
+    Will convert into bytes and optionally resize an image that is a file or a base64 bytes object.
+    :param file_or_bytes: either a string filename or a bytes base64 image object
+    :type file_or_bytes:  (Union[str, bytes])
+    :param resize:  optional new size
+    :type resize: (Tuple[int, int] or None)
+    :return: (bytes) a byte-string object
+    :rtype: (bytes)
+    '''
+    if isinstance(file_or_bytes, str):
+        img = PIL.Image.open(file_or_bytes)
+    else:
+        img = PIL.Image.open(io.BytesIO(base64.b64decode(file_or_bytes)))
+
+    cur_width, cur_height = img.size
+    if resize:
+        new_width, new_height = resize
+        scale = min(new_height/cur_height, new_width/cur_width)
+        img = img.resize((int(cur_width*scale), int(cur_height*scale)), PIL.Image.ANTIALIAS)
+    bio = io.BytesIO()
+    img.save(bio, format="PNG")
+    del img
+    return bio.getvalue()
+
+
+def load_picture_on_canvas(graph, im_name):
+    if os.path.exists(im_name):
+        blob2 = convert_to_bytes(im_name, IM_SIZE)
+        graph.delete_figure("all")
+        graph.draw_image(data=blob2, location=(0, IM_SIZE[1]))
+        print(im_name + " loaded")
+    else:
+        print("Still running")
+
+
 
 # Simple example of TabGroup element and the options available to it
 
@@ -18,17 +62,17 @@ main_runner = [
     [sg.Text('Min cell size', size=(10, 1)), sg.In(default_text='10', size=(3, 1)), sg.Text('pix', size=(3, 1)),
      sg.Text('Max cell size', size=(10, 1)), sg.In(default_text='1000', size=(5, 1)), sg.Text('pix', size=(3, 1))],
     [sg.Checkbox('Quick run', size=(10, 1), default=False)]
-    ]
+]
 
 advanced_params = [
     [sg.Text('Advanced Parameters')]
 ]
 
-blob_elem = sg.Image(filename='GUI/blob.png')
+graph = sg.Graph(canvas_size=IM_SIZE, graph_bottom_left=(0, 0), graph_top_right=IM_SIZE, enable_events=True, key='-GRAPH-')
 
 outputs = [
     [sg.Text('Cell Photos')],
-    [blob_elem]
+    [graph]
 ]
 
 
@@ -40,7 +84,7 @@ tab_group_layout = [[sg.Tab('Main Runner', main_runner, font='Courier 15', key='
 # The window layout - defines the entire window
 layout = [
     [sg.TabGroup(tab_group_layout, enable_events=True, key='-TABGROUP-')],
-    [sg.Button('Run'), sg.Button('Help'), sg.Button('Load outputs'), sg.Button('Quit')]
+    [sg.Button('Run'), sg.Button('Help'), sg.Button('Load outputs'), sg.Button('blob2'), sg.Button('Quit')]
     ]
 
 window = sg.Window('Invivo imaging - Adam Lab - ver0.0', layout, no_titlebar=False)
@@ -58,8 +102,13 @@ while True:
         print("Link to github appeared")
     if event == 'Load outputs':
         print('Loading traces')
-        if os.path.exists('GUI/blob_2.png'):
-            blob_elem.Update(filename='GUI/blob_2.png')
+        load_picture_on_canvas(graph, 'blob.png')
+    if event == 'blob2':
+        print('blob2')
+        load_picture_on_canvas(graph, 'blob_2.png')
 
 
 window.close()
+
+
+
