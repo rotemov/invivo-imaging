@@ -10,7 +10,7 @@
 #SBATCH --mail-user=rotem.ovadia@mail.huji.ac.il
 #SBATCH --export=DATA="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/two_cells/cell1",FN="cell1.bin",CUTOFF_POINT=0.9,CORR_TH_FIX=0.4,PATCH_SIZE=100,BG_RANK=4
 PIPELINE_DIR="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging"
-OUTPUT=$DATA"/output"
+OUTPUT=$DATA"/output2"
 MOV_IN="movReg.tif"
 DETR_SPACING=5000
 ROW_BLOCKS=4
