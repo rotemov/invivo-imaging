@@ -17,6 +17,10 @@ data_dir =str(sys.argv[1])
 cut_off_point = float(sys.argv[2])
 corr_th_fix = float(sys.argv[3])
 patch_size_edge = int(sys.argv[4])
+bg_rank = int(sys.argv[5])
+trunc_start = int(sys.argv[6])
+trunc_length = int(sys.argv[7])
+
 
 print("Demixing Start")
 print(data_dir)
@@ -129,8 +133,8 @@ if bg_flag:
 start = time.time()
 
 # select which window to demix on
-first_frame = 1000
-last_frame = 14000
+first_frame = trunc_start
+last_frame = trunc_start + window_legth
 
 movHP = sup.hp_filt_data(movB, spacing=10)
 
@@ -146,11 +150,11 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
 
                           # minimum pixel count of a superpixel
                           # don't need to change these unless cell sizes change
-                          length_cut=[int(patch_size_edge/3)],
+                          length_cut=[int(patch_size_edge**2 / 5)],
 
                           # maximum pixel count of a superpixel
                           # don't need to change these unless cell sizes change
-                          length_max=[patch_size_edge**3],
+                          length_max=[patch_size_edge**2 * 2],
 
                           patch_size=[patch_size_edge, patch_size_edge],
 
@@ -268,7 +272,7 @@ if GUI:
 # TODO: Add input from user for good / bad cells
 
 # rank of background to model, if none selected
-bg_rank = 2
+bg_rank = bg_rank
 final_cells = [0]
 
 nCells = len(final_cells)
