@@ -236,7 +236,7 @@ ref_im = np.std(movB, axis=2).transpose(1, 0)
 print("ref im shape: " + str(ref_im.shape))
 print("ref im flatten: " + str(np.percentile(ref_im.flatten(), [1, 99])))
 print("num_cells: " + str(cell_ct))
-print("rlt: " + rlt)
+print("rlt: " + str(rlt))
 
 for cell_num in range(cell_ct):
     plt.subplot(cell_ct, 2, 2 * cell_num + 1)
