@@ -19,7 +19,7 @@ corr_th_fix = float(sys.argv[3])
 patch_size_edge = int(sys.argv[4])
 bg_rank = int(sys.argv[5])
 trunc_start = int(sys.argv[6])
-trunc_length = int(sys.argv[7])
+window_length = int(sys.argv[7])
 
 
 print("Demixing Start")
@@ -134,7 +134,7 @@ start = time.time()
 
 # select which window to demix on
 first_frame = trunc_start
-last_frame = trunc_start + window_legth
+last_frame = trunc_start + window_length
 
 movHP = sup.hp_filt_data(movB, spacing=10)
 

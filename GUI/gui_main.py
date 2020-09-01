@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import PySimpleGUI as sg
+import os
 
 # Simple example of TabGroup element and the options available to it
 
@@ -23,9 +24,11 @@ advanced_params = [
     [sg.Text('Advanced Parameters')]
 ]
 
+blob_elem = sg.Image(filename='GUI/blob.png')
+
 outputs = [
     [sg.Text('Cell Photos')],
-    []
+    [blob_elem]
 ]
 
 
@@ -55,6 +58,8 @@ while True:
         print("Link to github appeared")
     if event == 'Load outputs':
         print('Loading traces')
+        if os.path.exists('GUI/blob_2.png'):
+            blob_elem.Update(filename='GUI/blob_2.png')
 
 
 window.close()
