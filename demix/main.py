@@ -158,7 +158,7 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
                           # likely don't need to change this
                           residual_cut=[np.sqrt(1 - (0.8) ** 2)],
 
-                          pass_num=3, bg=False,
+                          pass_num=1, bg=False,
 
                           ##### Cell-finding, NMF parameters
                           # correlation threshold of pixel with superpixel trace to include pixel in cell
