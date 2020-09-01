@@ -2,7 +2,7 @@
 #SBATCH -J II
 #SBATCH -o logs/II_%j.out
 #SBATCH -e logs/II_%j.err
-#SBATCH -N 4
+#SBATCH -N 2
 #SBATCH -c 32
 #SBATCH --threads-per-core=1
 #SBATCH --mem=128G
