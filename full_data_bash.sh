@@ -8,7 +8,7 @@
 #SBATCH --mem=128G
 #SBATCH --mail-type=END
 #SBATCH --mail-user=rotem.ovadia@mail.huji.ac.il
-#SBATCH --export=DATA="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/two_cells/cell1",FN="cell1.bin",CUTOFF_POINT=0.8,CORR_TH_FIX=0.3,PATCH_SIZE=150,BG_RANK=4
+#SBATCH --export=DATA="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/two_cells/cell1",FN="cell1.bin",CUTOFF_POINT=0.9,CORR_TH_FIX=0.3,PATCH_SIZE=175,BG_RANK=4
 PIPELINE_DIR="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging"
 OUTPUT=$DATA"/output"
 MOV_IN="movReg.tif"
