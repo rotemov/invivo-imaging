@@ -7,6 +7,7 @@ import io
 import base64
 
 IM_SIZE = (800, 600)
+sg.theme('Reddit')
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -47,22 +48,18 @@ def load_picture_on_canvas(values, graph, im_name):
         print("Still running")
 
 
-
-sg.theme('Reddit')
-
-
 main_runner = [
-    [sg.Text('Movie file:', size=(15, 1)), sg.InputText(key='input_file'), sg.FileBrowse()],
-    [sg.Text('Output directory:', size=(15, 1)), sg.InputText(key='output_dir'), sg.FolderBrowse()],
-    [sg.Text('Cut off threshold %', size=(20, 1)),
+    [sg.Text('Movie file:', size=(20, 5)), sg.InputText(key='input_file'), sg.FileBrowse()],
+    [sg.Text('Output directory:', size=(20, 5)), sg.InputText(key='output_dir'), sg.FolderBrowse()],
+    [sg.Text('Cut off threshold %', size=(30, 5)),
      sg.Slider(range=(80, 95), orientation='h', size=(34, 20), key='cut_off_threshold', default_value=90)],
-    [sg.Text('Correlation threshold fix %', size=(20, 1)),
+    [sg.Text('Correlation threshold fix %', size=(30, 5)),
      sg.Slider(range=(30, 60), orientation='h', size=(34, 20), key='corr_th_fix', default_value=45)],
-    [sg.Text('Start frame', size=(15, 1)), sg.In(default_text='1', size=(5, 1)),
-     sg.Text('Number of frames', size=(15, 1)), sg.In(default_text='5000', size=(5, 1))],
-    [sg.Text('Min cell area (pix)', size=(15, 1)), sg.In(default_text='10', size=(5, 1)),
-     sg.Text('Max cell area (pix)', size=(15, 1)), sg.In(default_text='1000', size=(5, 1))],
-    [sg.Checkbox('Quick run', size=(10, 1), default=False)]
+    [sg.Text('Start frame', size=(25, 5)), sg.In(default_text='1', size=(5, 1)),
+     sg.Text('Number of frames', size=(25, 5)), sg.In(default_text='5000', size=(5, 1))],
+    [sg.Text('Min cell area (pix)', size=(25, 5)), sg.In(default_text='10', size=(5, 1)),
+     sg.Text('Max cell area (pix)', size=(25, 5)), sg.In(default_text='1000', size=(5, 1))],
+    [sg.Checkbox('Quick run', size=(10, 5), default=False)]
 ]
 
 advanced_params = [
