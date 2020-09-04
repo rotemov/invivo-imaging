@@ -37,14 +37,14 @@ function [] = main_bash(data_dir, file_name)
         disp("Unsupported format, terminating")
         exit
     end
-    [nrows, ncols, nframes] = size(mov);
+
+    [nrows, ncols, nframes] = size(mov)
+
     movReg = NoRMCorre2(mov,home); % get registered movie
     disp("NoRMCorre done, saving outputs")
     clear mov
     saveastiff(movReg,fullfile(home,'movReg.tif')); % save registered movie
     clear movReg
-
-    pack
 
     % extract motion traces into MAT file
     reg_shifts = returnShifts(home);
