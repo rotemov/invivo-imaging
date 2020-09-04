@@ -45,19 +45,19 @@ def ask_proceed():
 
 
 # read in motion corrected movie
-noise = np.squeeze(io.imread(path + '/Sn_image.tif'))
+noise = np.squeeze(io.imread(PATH + '/Sn_image.tif'))
 [nrows, ncols] = noise.shape
 
-if os.path.isfile(path + '/motion_corrected.tif'):
-    mov = io.imread(path + '/motion_corrected.tif').transpose(1, 2, 0)
-elif os.path.isfile(path + '/denoised.tif'):
-    mov = io.imread(path + '/denoised.tif')
+if os.path.isfile(PATH + '/motion_corrected.tif'):
+    mov = io.imread(PATH + '/motion_corrected.tif').transpose(1, 2, 0)
+elif os.path.isfile(PATH + '/denoised.tif'):
+    mov = io.imread(PATH + '/denoised.tif')
 else:
     raise ValueError('No valid input file')
 
 # read in the mask for blood
-if os.path.isfile(path + '/bloodmask.tif'):
-    bloodmask = np.squeeze(io.imread(path + '/bloodmask.tif'))
+if os.path.isfile(PATH + '/bloodmask.tif'):
+    bloodmask = np.squeeze(io.imread(PATH + '/bloodmask.tif'))
     mov = mov * np.repeat(np.expand_dims(noise * bloodmask, 2), mov.shape[2], axis=2)
 else:
     mov = mov * np.repeat(np.expand_dims(noise, 2), mov.shape[2], axis=2)
@@ -89,12 +89,12 @@ save_plot('Average_Binned_Movie')
 # In[5]:
 
 # TODO: solve bg output
-bg_flag = os.path.isfile(path + '/ff.tif')
+bg_flag = os.path.isfile(PATH + '/ff.tif')
 
 if bg_flag:
     # import manually initialized background components
-    ff_ini = io.imread(path + '/ff.tif')
-    fb_ini = io.imread(path + '/fb.tif')
+    ff_ini = io.imread(PATH + '/ff.tif')
+    fb_ini = io.imread(PATH + '/fb.tif')
 
     # bin the spatial components
     fb_ini = fb_ini.reshape(mov.shape[1], mov.shape[0], -1).transpose(1, 0, 2)
@@ -425,7 +425,7 @@ if OPTOPATCH_STIM:
     else:
         proc = 'y'
     if proc.lower() == 'y':
-        trend = io.imread(path + '/trend.tif')
+        trend = io.imread(PATH + '/trend.tif')
         plt.imshow(np.mean(trend, axis=2))
         trendB = trend.reshape(int(trend.shape[0] / 2), 2, int(trend.shape[1] / 2), 2, trend.shape[2])
         trendB = np.mean(np.mean(trendB, axis=1), axis=2)
@@ -476,19 +476,19 @@ else:
 if proc.lower() == 'y':
     suffix = ''
 
-    io.imsave(path + '/spatial_footprints' + suffix + '.tif', X2)
-    io.imsave(path + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :nCells])
-    io.imsave(path + '/temporal_traces' + suffix + '.tif', beta_hat2)
-    io.imsave(path + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
-    io.imsave(path + '/residual_var' + suffix + '.tif', res)
+    io.imsave(PATH + '/spatial_footprints' + suffix + '.tif', X2)
+    io.imsave(PATH + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :nCells])
+    io.imsave(PATH + '/temporal_traces' + suffix + '.tif', beta_hat2)
+    io.imsave(PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
+    io.imsave(PATH + '/residual_var' + suffix + '.tif', res)
 
     cell_locations = center_of_mass(X2[:, 0].reshape(movB.shape[1::-1]).transpose(1, 0))
     for idx in range(nCells - 1):
         cell_locations = np.vstack((cell_locations,
                                     center_of_mass(X2[:, idx + 1].reshape(movB.shape[1::-1]).transpose(1, 0))))
-    io.imsave(path + '/cell_locations' + suffix + '.tif', np.array(cell_locations))
+    io.imsave(PATH + '/cell_locations' + suffix + '.tif', np.array(cell_locations))
 
     if nCells > 1:
-        io.imsave(path + '/cell_demixing_matrix' + suffix + '.tif',
+        io.imsave(PATH + '/cell_demixing_matrix' + suffix + '.tif',
                   np.linalg.inv(np.array(X2[:, :nCells].T @ X2[:, :nCells])) @ X2[:, :nCells].T)
     print('Saved!')
