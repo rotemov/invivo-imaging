@@ -51,10 +51,18 @@ echo "COL_BLOCKS: "$COL_BLOCKS
 echo "STIM_DIR: "$STIM_DIR
 
 
-
 PIPELINE_DIR="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging"
 cd $PIPELINE_DIR
-source activate_invivo.sh
+
+
+source ${HOME}/intel/parallel_studio_xe_2020.2.108/bin/psxevars.sh
+source ${HOME}/.bashrc
+echo "bashrc sourced"
+source ${HOME}/Programs/anaconda3/bin/activate invivo
+echo "invivo env activated"
+# OpenBLAS
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HOME}/Programs/OpenBLAS"
+
 
 echo "Starting denoising stage"
 cd denoise
