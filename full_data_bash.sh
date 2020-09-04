@@ -63,18 +63,24 @@ then
   echo "Starting registration"
   matlab -batch "main_bash('"$DATA"','"$FN"'); exit"
   echo "Registration done"
+else
+  echo "Skipping NormCoRRe"
 fi
 if [ $DETREND == "YES" ]
 then
   echo "Starting detrending"
   python denoise.py "$DATA" "$MOV_IN" "$OUTPUT" "$DETR_SPACING" "$ROW_BLOCKS" "$COL_BLOCKS" "$TRUNC_START" "$TRUNC_LENGTH" "$STIM_DIR"
   echo "Detrending finished"
+else
+  echo "Skipping detrending"
 fi
 if [ $MOCO == "YES" ]
 then
   echo "Starting motion_correction"
   matlab -batch "motion_correction('"$DATA"','"$OUTPUT"'); exit"
   echo "motion_correction finished."
+else
+  echo "Skipping motion_correction"
 fi
 echo "Denoising stage done"
 
