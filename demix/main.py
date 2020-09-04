@@ -24,13 +24,11 @@ window_length = int(sys.argv[7])
 
 print("Demixing Start")
 print(data_dir)
-
-# In[3]:
 GUI = False
 OPTOPATCH_STIM = False
-PLOT_PATH = data_dir + '/plots/'
-# input movie path
-path = data_dir + '/output'
+
+PATH = data_dir + '/output'
+PLOT_PATH = PATH + '/plots/'
 
 
 def save_plot(name):
