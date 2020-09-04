@@ -13,7 +13,7 @@ function [] = main_bash(data_dir, file_name)
     home = data_dir;
 
     output = fullfile(home,'output');
-    plots = fullfile(home, 'plots');
+    plots = fullfile(output, 'plots');
 
     if ~exist(output,'dir')
         mkdir(output)

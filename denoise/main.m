@@ -8,8 +8,6 @@ function main = main(data_dir, file_name)
     addpath(genpath(fullfile(cd,'..','lib')));
 
     harvard_cannon = 0;
-    % home = fullfile(cd, data_dir);
-    % home = fullfile(cd,'..','demo_data');
     home = data_dir;
 
     output = fullfile(home,'output');
