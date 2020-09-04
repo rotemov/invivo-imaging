@@ -54,15 +54,7 @@ echo "STIM_DIR: "$STIM_DIR
 PIPELINE_DIR="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging"
 cd $PIPELINE_DIR
 
-
-source ${HOME}/intel/parallel_studio_xe_2020.2.108/bin/psxevars.sh
-source ${HOME}/.bashrc
-echo "bashrc sourced"
-source ${HOME}/Programs/anaconda3/bin/activate invivo
-echo "invivo env activated"
-# OpenBLAS
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HOME}/Programs/OpenBLAS"
-
+sh -c 'source activate_invivo.sh'
 
 echo "Starting denoising stage"
 cd denoise
