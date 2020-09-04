@@ -52,31 +52,36 @@ echo "STIM_DIR: "$STIM_DIR
 
 
 PIPELINE_DIR="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging"
-source $PIPELINE_DIR/activate_invivo.sh
+cd $PIPELINE_DIR
+source activate_invivo.sh
+
+echo "Starting denoising stage"
 cd denoise
 if [ $NORMCORRE == "YES" ]
 then
+  echo "Starting registration"
   matlab -batch "main_bash('"$DATA"','"$FN"'); exit"
+  echo "Registration done"
 fi
-if [ $DE]
+if [ $DETREND == "YES" ]
 then
   echo "Starting detrending"
   python denoise.py "$DATA" "$MOV_IN" "$OUTPUT" "$DETR_SPACING" "$ROW_BLOCKS" "$COL_BLOCKS" "$TRUNC_START" "$TRUNC_LENGTH" "$STIM_DIR"
   echo "Detrending finished"
 fi
-if [ $MOCO == "YES"]
+if [ $MOCO == "YES" ]
 then
   echo "Starting motion_correction"
   matlab -batch "motion_correction('"$DATA"','"$OUTPUT"'); exit"
   echo "motion_correction finished."
 fi
-
 echo "Denoising stage done"
 
-if [ $DEMIX == "YES"]
+
+cd ../demix
+if [ $DEMIX == "YES" ]
 then
-  echo "Starting demixing"
-  cd ../demix
+  echo "Starting demixing stage"
   python main.py "$DATA" "$CUTOFF_POINT" "$CORR_TH_FIX" "$PATCH_SIZE" "$BG_RANK" "$TRUNC_START" "$TRUNC_LENGTH"
   echo "Demixing stage done"
 fi
