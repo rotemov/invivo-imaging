@@ -50,11 +50,15 @@ echo "Row blocks: "$ROW_BLOCKS
 echo "COL_BLOCKS: "$COL_BLOCKS
 echo "STIM_DIR: "$STIM_DIR
 
+for var in "$@"
+do
+  var=""
+done
+
 
 PIPELINE_DIR="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging"
 cd $PIPELINE_DIR
-
-sh -c 'source ./activate_invivo.sh'
+source activate_invivo.sh
 
 echo "Starting denoising stage"
 cd denoise
