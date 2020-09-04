@@ -1,13 +1,14 @@
 #!/bin/bash
 #SBATCH -J II
 #SBATCH -o logs/II_%j.out
-#SBATCH -e logs/II_%j.err
 #SBATCH -N 4
 #SBATCH -c 32
 #SBATCH --threads-per-core=1
 #SBATCH --mem=128G
 #SBATCH --mail-type=END
 #SBATCH --mail-user=rotem.ovadia@mail.huji.ac.il
+##SBATCH -e logs/II_%j.err
+
 
 DATA=${1:-"/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/two_cells/cell1"}
 FN=${2:-"cell1.bin"}
