@@ -1,8 +1,8 @@
 #!/bin/bash
-source ~/intel/parallel_studio_xe_2020.2.108/bin/psxevars.sh
-source ~/.bashrc
+. ${HOME}/intel/parallel_studio_xe_2020.2.108/bin/psxevars.sh
+. ${HOME}/.bashrc
 echo "bashrc sourced"
-source ~/Programs/anaconda3/bin/activate invivo
+. ${HOME}/Programs/anaconda3/bin/activate invivo
 echo "invivo env activated"
 # OpenBLAS
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${HOME}/Programs/OpenBLAS"

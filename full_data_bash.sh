@@ -58,7 +58,7 @@ done
 
 PIPELINE_DIR="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging"
 cd $PIPELINE_DIR
-source activate_invivo.sh
+. ./activate_invivo.sh
 
 echo "Starting denoising stage"
 cd denoise
