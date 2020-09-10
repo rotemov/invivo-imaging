@@ -473,7 +473,8 @@ if proc.lower() == 'y':
     io.imsave(PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
     io.imsave(PATH + '/residual_var' + suffix + '.tif', res)
     io.imsave(PATH + '/ref_im' + suffix + '.tif', ref_im)
-    with open(PATH + '/ref' + suffix + '.tif', 'w') as f:
+
+    with open(PATH + '/ref' + suffix + '.tif', 'wb') as f:
         pickle.dump([movB.shape[1::-1], ref_im], f)
 
 

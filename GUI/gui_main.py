@@ -8,6 +8,7 @@ from skimage import io as skio
 import numpy as np
 from matplotlib import pyplot as plt
 import subprocess
+from subprocess import CalledProcessError
 import pickle
 
 IM_SIZE = (800, 600)
@@ -64,7 +65,7 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
     if os.path.exists(voltage_full) and os.path.exists(ref_full) and os.path.exists(footprint_full):
         beta_hat2 = skio.imread(voltage_full)
         X2 = skio.imread(footprint_full)
-        with open(ref_full) as f:
+        with open(ref_full, 'rb') as f:
             mov_dims, ref_im = pickle.load(f)
 
         num_traces = beta_hat2.shape[0]
@@ -157,7 +158,10 @@ def run_command(values):
     ssh_line = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
     running_line = " ".join([str(arg) for arg in get_args_array(values)])
     ssh_line = ssh_line.format(values['password'], running_line)
-    subprocess.check_call(['ubuntu1804', 'run', ssh_line])
+    try:
+        subprocess.check_call(['ubuntu1804', 'run', ssh_line])
+    except CalledProcessError:
+        print("Please re-check parameters and password")
     return ssh_line
 
 
