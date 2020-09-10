@@ -442,6 +442,7 @@ num_traces = beta_hat2.shape[0]
 plt.figure(figsize=(25, 3 * num_traces))
 ref_im = np.std(movB, axis=2).transpose(1, 0)
 
+
 for idx in range(num_traces):
     plt.subplot(num_traces, 2, 2 * idx + 1)
     plt.plot(beta_hat2[idx, :])
@@ -471,6 +472,7 @@ if proc.lower() == 'y':
     io.imsave(PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
     io.imsave(PATH + '/residual_var' + suffix + '.tif', res)
     io.imsave(PATH + '/ref_im' + suffix + '.tif', ref_im)
+    io.imsave(PATH + '/movB' + suffix + '.tif', movB)
 
     cell_locations = center_of_mass(X2[:, 0].reshape(movB.shape[1::-1]).transpose(1, 0))
     for idx in range(nCells - 1):

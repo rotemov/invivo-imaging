@@ -78,10 +78,14 @@ echo "Update AC keep shape: "$UPDATE_AC_KEEP_SHAPE
 echo "Background regression learning rate: "$BG_REG_LR
 echo "Background regression max iterations: "$BG_REG_MAX_ITER
 
+echo -e "\n"
+
 # Activating environment
 PIPELINE_DIR="/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging"
 cd $PIPELINE_DIR
 . ./activate_invivo.sh
+
+echo -e "\n"
 
 # Running the different steps
 echo "Starting denoising stage"
@@ -110,6 +114,7 @@ else
 fi
 echo "Denoising stage done"
 
+echo -e "\n"
 
 cd ../demix
 if [ $DEMIX == "1" ]; then

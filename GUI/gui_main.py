@@ -63,11 +63,10 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
     if os.path.exists(voltage_full) and os.path.exists(ref_full) and os.path.exists(footprint_full):
         beta_hat2 = skio.imread(voltage_full)
         X2 = skio.imread(footprint_full)
-        movB = skio.imread(ref_full)
+        ref_im = skio.imread(ref_full)
 
         num_traces = beta_hat2.shape[0]
         fig = plt.figure(figsize=(25, 3 * num_traces))
-        ref_im = np.std(movB, axis=2).transpose(1, 0)
 
         for idx in range(num_traces):
             fig.subplot(num_traces, 2, 2 * idx + 1)
@@ -114,7 +113,7 @@ def _bool_to_words(flag):
 
 
 def get_args_array(values):
-    args = [None]*31
+    args = [None]*32
     args[0] = "/opt/slurm/bin/sbatch /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/full_data_bash.sh"
     args[1] = values['input_file']
     args[2] = values['output_dir']
@@ -146,7 +145,7 @@ def get_args_array(values):
     args[28] = values['update_ac_merge_overlap_thr']
     args[29] = values['bg_reg_max_iter']
     args[30] = values['bg_reg_lr']
-    # args[31] = values['stim_dir']
+    args[31] = values['stim_dir']
     for i in range(len(args)):
         if type(args[i]) == bool:
             args[i] = int(args[i])
