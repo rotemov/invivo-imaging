@@ -75,7 +75,7 @@ echo "Update AC max iterations: "$UPDATE_AC_MAX_ITER
 echo "Update AC tol: "$UPDATE_AC_TOL
 echo "Update AC merge overlap threshold: "$UPDATE_AC_MERGE_OVERLAP_THR
 echo "Update AC keep shape: "$UPDATE_AC_KEEP_SHAPE
-echo "Background regression learning rate: "$BG_BG_REG_LR
+echo "Background regression learning rate: "$BG_REG_LR
 echo "Background regression max iterations: "$BG_REG_MAX_ITER
 
 # Activating environment

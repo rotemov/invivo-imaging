@@ -114,7 +114,7 @@ def _bool_to_words(flag):
 
 
 def get_args_array(values):
-    args = [None]*32
+    args = [None]*31
     args[0] = "/opt/slurm/bin/sbatch /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/full_data_bash.sh"
     args[1] = values['input_file']
     args[2] = values['output_dir']
@@ -146,7 +146,7 @@ def get_args_array(values):
     args[28] = values['update_ac_merge_overlap_thr']
     args[29] = values['bg_reg_max_iter']
     args[30] = values['bg_reg_lr']
-    args[31] = values['stim_dir']
+    # args[31] = values['stim_dir']
     for i in range(len(args)):
         if type(args[i]) == bool:
             args[i] = int(args[i])
