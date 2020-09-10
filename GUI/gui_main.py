@@ -55,15 +55,17 @@ def load_picture_on_canvas(values, graph, im_name):
         print("Still running")
 
 
-def open_traces_plot(values, voltage_file, footprint_file, ref_file):
+def open_traces_plot(values, voltage_file, footprint_file, ref_file, movB_file):
     voltage_full = os.path.join(values['output_dir'], voltage_file)
     footprint_full = os.path.join(values['output_dir'], footprint_file)
     ref_full = os.path.join(values['output_dir'], ref_file)
+    movB_full = os.path.join(values['output_dir'], movB_file)
 
     if os.path.exists(voltage_full) and os.path.exists(ref_full) and os.path.exists(footprint_full):
         beta_hat2 = skio.imread(voltage_full)
         X2 = skio.imread(footprint_full)
         ref_im = skio.imread(ref_full)
+        movB = skio.imread(movB_full)
 
         num_traces = beta_hat2.shape[0]
         fig = plt.figure(figsize=(25, 3 * num_traces))
@@ -279,7 +281,8 @@ def main():
         if event == 'Temporal Correlations':
             load_picture_on_canvas(values, other_plots_graph, 'Temporal_Correlations.png')
         if event == 'Open zoomable plot':
-            open_traces_plot(values, 'temporal_traces.tif', 'spatial_footprints.tif', 'ref_im.tif')
+            open_traces_plot(values, 'temporal_traces.tif', 'spatial_footprints.tif', 'ref_im.tif', 'movB.tif')
+
         number_field_keys = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 'max_size',
                              'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
                              'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
