@@ -259,7 +259,7 @@ def main():
         [sg.Button('Run'), sg.Button('Help'), sg.Button('Load outputs'), sg.Button('Quit')]
         ]
 
-    window = sg.Window('Invivo imaging - Adam Lab - ver'+str(ver), layout, no_titlebar=False)
+    window = sg.Window('Invivo imaging - Adam Lab - ver'+str(VERSION), layout, no_titlebar=False)
 
     while True:
         event, values = window.read()
