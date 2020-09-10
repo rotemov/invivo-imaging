@@ -8,6 +8,7 @@ from skimage import io as skio
 import numpy as np
 from matplotlib import pyplot as plt
 import subprocess
+import pickle
 
 IM_SIZE = (800, 600)
 sg.theme('Reddit')
@@ -63,9 +64,8 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
     if os.path.exists(voltage_full) and os.path.exists(ref_full) and os.path.exists(footprint_full):
         beta_hat2 = skio.imread(voltage_full)
         X2 = skio.imread(footprint_full)
-        ref = skio.imread(ref_full)
-        mov_dims = ref[0]
-        ref_im = ref[1]
+        with open(ref_full) as f:
+            mov_dims, ref_im = pickle.load(f)
 
         num_traces = beta_hat2.shape[0]
         fig = plt.figure(figsize=(25, 3 * num_traces))
@@ -117,8 +117,7 @@ def _bool_to_words(flag):
 def get_args_array(values):
     args = [None]*32
     args[0] = "/opt/slurm/bin/sbatch /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/full_data_bash.sh"
-    args[1] = values['input_file']
-    args[2] = values['output_dir']
+    args[1], args[2] = os.path.split(values['input_file'])
     args[3] = values['normcorre']
     args[4] = values['detrend']
     args[5] = values['moco']
@@ -164,7 +163,7 @@ def run_command(values):
 
 def main():
     main_runner = [
-        [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file', default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1'), sg.FileBrowse()],
+        [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file', default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/Sq_camera.bin'), sg.FileBrowse()],
         [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir', default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/output'), sg.FolderBrowse()],
         [sg.Text('Cluster password', size=LABEL_SIZE), sg.InputText('', key='password', password_char='*')],
         [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre")],

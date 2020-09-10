@@ -9,6 +9,7 @@ from sklearn.decomposition import TruncatedSVD
 import torch
 import scipy.io
 import util_plot
+import pickle
 
 sys.path.append(os.getcwd())
 
@@ -471,7 +472,10 @@ if proc.lower() == 'y':
     io.imsave(PATH + '/temporal_traces' + suffix + '.tif', beta_hat2)
     io.imsave(PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
     io.imsave(PATH + '/residual_var' + suffix + '.tif', res)
-    io.imsave(PATH + '/ref' + suffix + '.tif', [movB.shape[1::-1], ref_im])
+    io.imsave(PATH + '/ref_im' + suffix + '.tif', ref_im)
+    with open(PATH + '/ref' + suffix + '.tif', 'w') as f:
+        pickle.dump([movB.shape[1::-1], ref_im], f)
+
 
     cell_locations = center_of_mass(X2[:, 0].reshape(movB.shape[1::-1]).transpose(1, 0))
     for idx in range(nCells - 1):
