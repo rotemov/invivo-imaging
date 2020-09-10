@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J II
-#SBATCH -o logs/II_%j.log
+#SBATCH -o /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/logs/II_%j.log
 #SBATCH -N 4
 #SBATCH -c 32
 #SBATCH --threads-per-core=1
