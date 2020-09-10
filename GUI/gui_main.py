@@ -162,10 +162,9 @@ def run_command(values):
 
 
 def main():
-    height = 1
     main_runner = [
-        [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file'), sg.FileBrowse()],
-        [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir'), sg.FolderBrowse()],
+        [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file', default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1'), sg.FileBrowse()],
+        [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir', default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/output'), sg.FolderBrowse()],
         [sg.Text('Cluster password', size=LABEL_SIZE), sg.InputText('', key='password', password_char='*')],
         [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre")],
         [sg.Checkbox('Detrending', size=CHECK_BOX_SIZE, default=True, key="detrend")],
@@ -174,7 +173,8 @@ def main():
         [sg.Checkbox('Quick run', size=CHECK_BOX_SIZE, default=False, key="sup_only")],
         [sg.Text('Cut off point %', size=LABEL_SIZE), sg.Slider(range=(80, 99), orientation='h', size=SLIDER_SIZE, key='cut_off_point', default_value=90)],
         [sg.Text('Correlation threshold fix %', size=LABEL_SIZE), sg.Slider(range=(30, 60), orientation='h', size=SLIDER_SIZE, key='corr_th_fix', default_value=45)],
-        [sg.Text('Start frame', size=LABEL_SIZE), sg.In(default_text='1', size=INPUT_SIZE, key='trunc_start', enable_events=True), sg.Text('Number of frames', size=(25, height)), sg.In(default_text='5000', size=(5, height), key='trunc_length', enable_events=True)],
+        [sg.Text('Start frame', size=LABEL_SIZE), sg.In(default_text='1', size=INPUT_SIZE, key='trunc_start', enable_events=True),
+     sg.Text('Number of frames', size=LABEL_SIZE), sg.In(default_text='5000', size=INPUT_SIZE, key='trunc_length', enable_events=True)],
         [sg.Text('Cell diameter', size=LABEL_SIZE), sg.In(default_text='10', size=INPUT_SIZE, key='patch_size_edge', enable_events=True)],
         [sg.Text('Sample frequency[Hz]', size=LABEL_SIZE), sg.In(default_text='1000', size=INPUT_SIZE, key='sample_freq', enable_events=True)],
     ]
