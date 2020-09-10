@@ -7,7 +7,7 @@ from skimage import io
 from scipy.ndimage import center_of_mass, filters, gaussian_filter
 from sklearn.decomposition import TruncatedSVD
 import torch
-import scipy.ioim
+import scipy.io
 import util_plot
 
 sys.path.append(os.getcwd())
