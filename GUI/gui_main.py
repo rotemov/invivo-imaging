@@ -11,6 +11,7 @@ import subprocess
 from subprocess import CalledProcessError
 import pickle
 
+VERSION = 0.1
 IM_SIZE = (800, 600)
 sg.theme('Reddit')
 CHECK_BOX_SIZE = (25, 1)
@@ -72,16 +73,17 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
         fig = plt.figure(figsize=(25, 3 * num_traces))
 
         for idx in range(num_traces):
-            fig.subplot(num_traces, 2, 2 * idx + 1)
-            fig.plot(beta_hat2[idx, :])
 
-            fig.subplot(num_traces, 2, 2 * idx + 2)
+            plt.subplot(num_traces, 2, 2 * idx + 1)
+            plt.plot(beta_hat2[idx, :])
+
+            plt.subplot(num_traces, 2, 2 * idx + 2)
             lower, upper = np.percentile(ref_im.flatten(), [1, 99])
-            fig.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
+            plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
 
             cell_loc = X2[:, idx].reshape(mov_dims)
             cell_loc = np.ma.masked_where(abs(cell_loc) < 1e-8, cell_loc)
-            fig.imshow(cell_loc, cmap='jet', alpha=0.5)
+            plt.imshow(cell_loc, cmap='jet', alpha=0.5)
         """
         traces = skio.imread(voltage_full)
         elem_num, frame_num = traces.shape
@@ -96,7 +98,7 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
             axs[i, 0].plot(t, voltage, linewidth=0.7)
             axs[i, 0].set_ylim(-max_v, max_v)
         """
-        fig.show()
+        plt.show()
         print(voltage_file + " plotted")
     else:
         print("Still running")
@@ -184,7 +186,6 @@ def main():
     ]
 
     advanced_params = [
-        [sg.Text('Advanced Parameters')],
         [sg.Text('# bg elements', size=LABEL_SIZE), sg.In(default_text='4', size=INPUT_SIZE, key='bg_rank', enable_events=True)],
         [sg.Text('Detrend spacing', size=LABEL_SIZE), sg.In(default_text='5000', size=INPUT_SIZE, key='detr_spacing', enable_events=True)],
         [sg.Text('Row blocks', size=LABEL_SIZE), sg.In(default_text='4', size=INPUT_SIZE, key='row_blocks', enable_events=True)],
@@ -258,7 +259,7 @@ def main():
         [sg.Button('Run'), sg.Button('Help'), sg.Button('Load outputs'), sg.Button('Quit')]
         ]
 
-    window = sg.Window('Invivo imaging - Adam Lab - ver0.0', layout, no_titlebar=False)
+    window = sg.Window('Invivo imaging - Adam Lab - ver'+str(ver), layout, no_titlebar=False)
 
     while True:
         event, values = window.read()
