@@ -115,7 +115,7 @@ def _bool_to_words(flag):
 
 def get_args_array(values):
     args = [None]*32
-    args[0] = "sbatch full_data_bash.sh"
+    args[0] = "/opt/slurm/bin/sbatch /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/full_data_bash.sh"
     args[1] = values['input_file']
     args[2] = values['output_dir']
     args[3] = values['normcorre']

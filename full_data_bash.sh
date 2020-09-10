@@ -121,4 +121,4 @@ if [ $DEMIX == "1" ]; then
   echo "Demixing stage done"
 fi
 
-mv $PIPELINE_DIR/logs/* $OUTPUT/.
+# mv $PIPELINE_DIR/logs/* $OUTPUT/.
