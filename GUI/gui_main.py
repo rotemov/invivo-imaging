@@ -11,6 +11,7 @@ import subprocess
 from subprocess import CalledProcessError
 import pickle
 
+
 VERSION = 0.1
 IM_SIZE = (800, 600)
 sg.theme('Reddit')
