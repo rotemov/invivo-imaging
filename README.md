@@ -1,6 +1,23 @@
 # invivo-imaging (Adam Lab HUJI)
 
-## Yoav Adam's Lab @ HUJI - subversion of main pipeline for running on ELSC cluster.
+Welcome to Yoav Adam's Lab @ HUJI - subversion of the invivo-imaging pipeline, tested on the ELSC cluster.
+
+Pipeline should work from Ubuntu and Windows 10 machines connected to HUJI's network / using the Samba VPN provided by HUJI.
+
+## Installation
+
+1. For windows users please install Ubuntu 18.04 LTS from the Microsoft Store (don't worry this won't change your OS).
+
+2. Install Anaconda from https://www.anaconda.com/products/individual (preferably 64-bit).
+
+3. git clone
+
+4. conda create
+
+5. python GUI/main_gui.py
+
+
+# Original Docs
 
 Spike-Guided Penalized Matrix Decomposition-Non-negative Matrix Factorization (SGPMD-NMF) pipeline code for in vivo voltage imaging
 
@@ -14,7 +31,7 @@ Spike-Guided Penalized Matrix Decomposition-Non-negative Matrix Factorization (S
 8.	Update spatial footprint of cells and background by ensuring smoothness of background spatial components around edges of cells
 9.	Apply the updated spatial and background footprints to calculate the temporal traces from the full denoised movie
 
-## Instructions
+## Instructions for cluster install
 
 Instructions to run the pipeline here: http://bit.ly/sgpmdnmf-steps (Not comprehensive)
 
