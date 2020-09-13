@@ -11,6 +11,7 @@ import subprocess
 from subprocess import CalledProcessError
 import pickle
 from datetime import datetime
+import re
 
 VERSION = 0.1
 IM_SIZE = (800, 600)
@@ -118,6 +119,17 @@ def _bool_to_words(flag):
         return "NO"
 
 
+def nw_drive_path(path):
+    return re.sub('[a-zA-Z]:/', '/ems/elsc-labs/adam-y/', path)
+
+
+def get_file_and_path(values):
+    path, file = os.path.split(values['input_file'])
+    if values['network_drive_flag']:
+        path = nw_drive_path(path)
+    return (path, file)
+
+
 def get_args_array(values):
     args = [None] * 32
     args[0] = "/opt/slurm/bin/sbatch /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/full_data_bash.sh"
@@ -132,7 +144,7 @@ def get_args_array(values):
     args[10] = values['bg_rank']
     args[11] = values['trunc_start']
     args[12] = values['trunc_length']
-    args[13] = values['output_dir']
+    args[13] = nw_drive_path(values['output_dir'])
     args[14] = values['mov_in']
     args[15] = values['detr_spacing']
     args[16] = values['row_blocks']
@@ -150,7 +162,7 @@ def get_args_array(values):
     args[28] = values['update_ac_merge_overlap_thr']
     args[29] = values['bg_reg_max_iter']
     args[30] = values['bg_reg_lr']
-    args[31] = values['stim_dir']
+    args[31] = nw_drive_path(values['stim_dir'])
     for i in range(len(args)):
         if type(args[i]) == bool:
             args[i] = int(args[i])
@@ -179,6 +191,7 @@ def main():
         [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir',
                                                                      default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/output'),
          sg.FolderBrowse()],
+        [sg.Checkbox('From network drive', size=CHECK_BOX_SIZE, default=False, key='network_drive_flag')],
         [sg.Text('Cluster password', size=LABEL_SIZE), sg.InputText('', key='password', password_char='*')],
         [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre")],
         [sg.Checkbox('Detrending', size=CHECK_BOX_SIZE, default=True, key="detrend")],

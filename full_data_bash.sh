@@ -87,6 +87,8 @@ cd $PIPELINE_DIR
 
 echo -e "\n"
 
+echo $PATH
+
 # Running the different steps
 echo "Starting denoising stage"
 cd denoise
