@@ -92,7 +92,7 @@ echo "Starting denoising stage"
 cd denoise
 if [ $NORMCORRE == "1" ]; then
   echo "Starting registration"
-  matlab -batch "main_bash('"$DATA"','"$FN"'); exit"
+  /usr/local/bin/matlab -batch "main_bash('"$DATA"','"$FN"'); exit"
   echo "Registration done"
 else
   echo "Skipping NormCoRRe"
@@ -107,7 +107,7 @@ else
 fi
 if [ $MOCO == "1" ]; then
   echo "Starting motion_correction"
-  matlab -batch "motion_correction('"$DATA"','"$OUTPUT"'); exit"
+  /usr/local/bin/matlab -batch "motion_correction('"$DATA"','"$OUTPUT"'); exit"
   echo "motion_correction finished."
 else
   echo "Skipping motion_correction"

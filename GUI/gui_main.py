@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 import subprocess
 from subprocess import CalledProcessError
 import pickle
-
+from datetime import datetime
 
 VERSION = 0.1
 IM_SIZE = (800, 600)
@@ -19,6 +19,7 @@ CHECK_BOX_SIZE = (25, 1)
 INPUT_SIZE = (10, 1)
 LABEL_SIZE = (25, 1)
 SLIDER_SIZE = (34, 20)
+DATETIME_FORMAT = "%d/%m/%Y_%H:%M:%S"
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -39,8 +40,8 @@ def convert_to_bytes(file_or_bytes, resize=None):
     cur_width, cur_height = img.size
     if resize:
         new_width, new_height = resize
-        scale = min(new_height/cur_height, new_width/cur_width)
-        img = img.resize((int(cur_width*scale), int(cur_height*scale)), PIL.Image.ANTIALIAS)
+        scale = min(new_height / cur_height, new_width / cur_width)
+        img = img.resize((int(cur_width * scale), int(cur_height * scale)), PIL.Image.ANTIALIAS)
     bio = io.BytesIO()
     img.save(bio, format="PNG")
     del img
@@ -74,7 +75,6 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
         fig = plt.figure(figsize=(25, 3 * num_traces))
 
         for idx in range(num_traces):
-
             plt.subplot(num_traces, 2, 2 * idx + 1)
             plt.plot(beta_hat2[idx, :])
 
@@ -119,15 +119,15 @@ def _bool_to_words(flag):
 
 
 def get_args_array(values):
-    args = [None]*32
+    args = [None] * 32
     args[0] = "/opt/slurm/bin/sbatch /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/full_data_bash.sh"
     args[1], args[2] = os.path.split(values['input_file'])
     args[3] = values['normcorre']
     args[4] = values['detrend']
     args[5] = values['moco']
     args[6] = values['demix']
-    args[7] = values['cut_off_point']/100
-    args[8] = values['corr_th_fix']/100
+    args[7] = values['cut_off_point'] / 100
+    args[8] = values['corr_th_fix'] / 100
     args[9] = values['patch_size_edge']
     args[10] = values['bg_rank']
     args[11] = values['trunc_start']
@@ -163,6 +163,9 @@ def run_command(values):
     ssh_line = ssh_line.format(values['password'], running_line)
     try:
         subprocess.check_call(['ubuntu1804', 'run', ssh_line])
+        with open("run_params/params_" + values['input_file'] + "_" + datetime.now().strftime(DATETIME_FORMAT),
+                  'wb') as f:
+            pickle.dump(values, f)
     except CalledProcessError:
         print("Please re-check parameters and password")
     return ssh_line
@@ -170,43 +173,69 @@ def run_command(values):
 
 def main():
     main_runner = [
-        [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file', default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/Sq_camera.bin'), sg.FileBrowse()],
-        [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir', default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/output'), sg.FolderBrowse()],
+        [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file',
+                                                               default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/Sq_camera.bin'),
+         sg.FileBrowse()],
+        [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir',
+                                                                     default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/output'),
+         sg.FolderBrowse()],
         [sg.Text('Cluster password', size=LABEL_SIZE), sg.InputText('', key='password', password_char='*')],
         [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre")],
         [sg.Checkbox('Detrending', size=CHECK_BOX_SIZE, default=True, key="detrend")],
         [sg.Checkbox('Motion correction', size=CHECK_BOX_SIZE, default=True, key="moco")],
         [sg.Checkbox('Demixing', size=CHECK_BOX_SIZE, default=True, key="demix")],
         [sg.Checkbox('Quick run', size=CHECK_BOX_SIZE, default=False, key="sup_only")],
-        [sg.Text('Cut off point %', size=LABEL_SIZE), sg.Slider(range=(80, 99), orientation='h', size=SLIDER_SIZE, key='cut_off_point', default_value=90)],
-        [sg.Text('Correlation threshold fix %', size=LABEL_SIZE), sg.Slider(range=(30, 60), orientation='h', size=SLIDER_SIZE, key='corr_th_fix', default_value=45)],
-        [sg.Text('Start frame', size=LABEL_SIZE), sg.In(default_text='1', size=INPUT_SIZE, key='trunc_start', enable_events=True),
-     sg.Text('Number of frames', size=LABEL_SIZE), sg.In(default_text='5000', size=INPUT_SIZE, key='trunc_length', enable_events=True)],
-        [sg.Text('Cell diameter', size=LABEL_SIZE), sg.In(default_text='10', size=INPUT_SIZE, key='patch_size_edge', enable_events=True)],
-        [sg.Text('Sample frequency[Hz]', size=LABEL_SIZE), sg.In(default_text='1000', size=INPUT_SIZE, key='sample_freq', enable_events=True)],
+        [sg.Text('Cut off point %', size=LABEL_SIZE),
+         sg.Slider(range=(80, 99), orientation='h', size=SLIDER_SIZE, key='cut_off_point', default_value=90)],
+        [sg.Text('Correlation threshold fix %', size=LABEL_SIZE),
+         sg.Slider(range=(30, 60), orientation='h', size=SLIDER_SIZE, key='corr_th_fix', default_value=45)],
+        [sg.Text('Start frame', size=LABEL_SIZE),
+         sg.In(default_text='1', size=INPUT_SIZE, key='trunc_start', enable_events=True),
+         sg.Text('Number of frames', size=LABEL_SIZE),
+         sg.In(default_text='5000', size=INPUT_SIZE, key='trunc_length', enable_events=True)],
+        [sg.Text('Cell diameter', size=LABEL_SIZE),
+         sg.In(default_text='10', size=INPUT_SIZE, key='patch_size_edge', enable_events=True)],
+        [sg.Text('Sample frequency[Hz]', size=LABEL_SIZE),
+         sg.In(default_text='1000', size=INPUT_SIZE, key='sample_freq', enable_events=True)],
     ]
 
     advanced_params = [
-        [sg.Text('# bg elements', size=LABEL_SIZE), sg.In(default_text='4', size=INPUT_SIZE, key='bg_rank', enable_events=True)],
-        [sg.Text('Detrend spacing', size=LABEL_SIZE), sg.In(default_text='5000', size=INPUT_SIZE, key='detr_spacing', enable_events=True)],
-        [sg.Text('Row blocks', size=LABEL_SIZE), sg.In(default_text='4', size=INPUT_SIZE, key='row_blocks', enable_events=True)],
-        [sg.Text('Column blocks', size=LABEL_SIZE), sg.In(default_text='2', size=INPUT_SIZE, key='col_blocks', enable_events=True)],
-        [sg.Text('Threshold level', size=LABEL_SIZE), sg.In(default_text='4', size=INPUT_SIZE, key='th_lvl', enable_events=True)],
-        [sg.Text('# Passes', size=LABEL_SIZE), sg.In(default_text='1', size=INPUT_SIZE, key='pass_num', enable_events=True)],
-        [sg.Text('Merge correlation threshold', size=LABEL_SIZE), sg.In(default_text='0.8', size=INPUT_SIZE, key='merge_corr_thr', enable_events=True)],
-        [sg.Text('Remove dimmest ', size=LABEL_SIZE), sg.In(default_text='0', size=INPUT_SIZE, key='remove_dimmest', enable_events=True)],
-        [sg.Text('Residual cut', size=LABEL_SIZE), sg.In(default_text='0.6', size=INPUT_SIZE, key='residual_cut', enable_events=True)],
-        [sg.Text('UAC max iterations', size=LABEL_SIZE), sg.In(default_text='35', size=INPUT_SIZE, key='update_ac_max_iter', enable_events=True)],
-        [sg.Text('UAC tol', size=LABEL_SIZE), sg.In(default_text='1e-8', size=INPUT_SIZE, key='update_ac_tol', enable_events=True)],
-        [sg.Text('UAC merge overlap threshold', size=LABEL_SIZE), sg.In(default_text='0.8', size=INPUT_SIZE, key='update_ac_merge_overlap_thr', enable_events=True)],
+        [sg.Text('# bg elements', size=LABEL_SIZE),
+         sg.In(default_text='4', size=INPUT_SIZE, key='bg_rank', enable_events=True)],
+        [sg.Text('Detrend spacing', size=LABEL_SIZE),
+         sg.In(default_text='5000', size=INPUT_SIZE, key='detr_spacing', enable_events=True)],
+        [sg.Text('Row blocks', size=LABEL_SIZE),
+         sg.In(default_text='4', size=INPUT_SIZE, key='row_blocks', enable_events=True)],
+        [sg.Text('Column blocks', size=LABEL_SIZE),
+         sg.In(default_text='2', size=INPUT_SIZE, key='col_blocks', enable_events=True)],
+        [sg.Text('Threshold level', size=LABEL_SIZE),
+         sg.In(default_text='4', size=INPUT_SIZE, key='th_lvl', enable_events=True)],
+        [sg.Text('# Passes', size=LABEL_SIZE),
+         sg.In(default_text='1', size=INPUT_SIZE, key='pass_num', enable_events=True)],
+        [sg.Text('Merge correlation threshold', size=LABEL_SIZE),
+         sg.In(default_text='0.8', size=INPUT_SIZE, key='merge_corr_thr', enable_events=True)],
+        [sg.Text('Remove dimmest ', size=LABEL_SIZE),
+         sg.In(default_text='0', size=INPUT_SIZE, key='remove_dimmest', enable_events=True)],
+        [sg.Text('Residual cut', size=LABEL_SIZE),
+         sg.In(default_text='0.6', size=INPUT_SIZE, key='residual_cut', enable_events=True)],
+        [sg.Text('UAC max iterations', size=LABEL_SIZE),
+         sg.In(default_text='35', size=INPUT_SIZE, key='update_ac_max_iter', enable_events=True)],
+        [sg.Text('UAC tol', size=LABEL_SIZE),
+         sg.In(default_text='1e-8', size=INPUT_SIZE, key='update_ac_tol', enable_events=True)],
+        [sg.Text('UAC merge overlap threshold', size=LABEL_SIZE),
+         sg.In(default_text='0.8', size=INPUT_SIZE, key='update_ac_merge_overlap_thr', enable_events=True)],
         [sg.Checkbox('UAC keep shape', size=CHECK_BOX_SIZE, default=True, key="update_ac_keep_shape")],
-        [sg.Text('BGR learning rate', size=LABEL_SIZE), sg.In(default_text='0.001', size=INPUT_SIZE, key='bg_reg_lr', enable_events=True)],
-        [sg.Text('BGR max iterations', size=LABEL_SIZE), sg.In(default_text='1000', size=INPUT_SIZE, key='bg_reg_max_iter', enable_events=True)],
+        [sg.Text('BGR learning rate', size=LABEL_SIZE),
+         sg.In(default_text='0.001', size=INPUT_SIZE, key='bg_reg_lr', enable_events=True)],
+        [sg.Text('BGR max iterations', size=LABEL_SIZE),
+         sg.In(default_text='1000', size=INPUT_SIZE, key='bg_reg_max_iter', enable_events=True)],
         [sg.Text('Registered movie name', size=LABEL_SIZE), sg.InputText(key='mov_in', default_text='movReg.tif')],
         [sg.Text('Stimulation dir: ', size=LABEL_SIZE), sg.InputText(key='stim_dir'), sg.FolderBrowse()],
         [sg.Checkbox('Background mask', size=CHECK_BOX_SIZE, default=False, key="bg_mask")],
-        [sg.Text('Min cell area (pix)', size=LABEL_SIZE), sg.In(default_text='10', size=INPUT_SIZE, key='min_size', enable_events=True),
-         sg.Text('Max cell area (pix)', size=LABEL_SIZE), sg.In(default_text='1000', size=INPUT_SIZE, key='max_size', enable_events=True)],
+        [sg.Text('Min cell area (pix)', size=LABEL_SIZE),
+         sg.In(default_text='10', size=INPUT_SIZE, key='min_size', enable_events=True),
+         sg.Text('Max cell area (pix)', size=LABEL_SIZE),
+         sg.In(default_text='1000', size=INPUT_SIZE, key='max_size', enable_events=True)],
     ]
 
     nmf_traces_graph = sg.Graph(canvas_size=IM_SIZE, graph_bottom_left=(0, 0), graph_top_right=IM_SIZE,
@@ -240,9 +269,9 @@ def main():
     other_plots = [
         [sg.Text('Other plots')],
         [other_plots_graph],
-        [sg.Button('Average'), sg.Button('Background Traces'), sg.Button('Intermediate Traces'), sg.Button('Temporal Correlations')]
+        [sg.Button('Average'), sg.Button('Background Traces'), sg.Button('Intermediate Traces'),
+         sg.Button('Temporal Correlations')]
     ]
-
 
     # The TabgGroup layout - it must contain only Tabs
     tab_group_layout = [[
@@ -252,15 +281,15 @@ def main():
         sg.Tab('Super Pixels', super_pixels, key='tab_super_pixels'),
         sg.Tab('Final Traces', final_traces, key='tab_final_traces'),
         sg.Tab('Other Plots', other_plots, key='tab_outputs'),
-        ]]
+    ]]
 
     # The window layout - defines the entire window
     layout = [
         [sg.TabGroup(tab_group_layout, enable_events=True, key='-TABGROUP-')],
         [sg.Button('Run'), sg.Button('Help'), sg.Button('Load outputs'), sg.Button('Quit')]
-        ]
+    ]
 
-    window = sg.Window('Invivo imaging - Adam Lab - ver'+str(VERSION), layout, no_titlebar=False)
+    window = sg.Window('Invivo imaging - Adam Lab - ver' + str(VERSION), layout, no_titlebar=False)
 
     while True:
         event, values = window.read()
