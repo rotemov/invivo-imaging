@@ -4,7 +4,7 @@
 #SBATCH -N 4
 #SBATCH -c 32
 #SBATCH --threads-per-core=1
-#SBATCH --mem=64G
+#SBATCH --mem=128G
 #SBATCH --mail-type=END
 #SBATCH --mail-user=rotem.ovadia@mail.huji.ac.il
 
@@ -86,8 +86,6 @@ cd $PIPELINE_DIR
 . ./activate_invivo.sh
 
 echo -e "\n"
-
-echo $PATH
 
 # Running the different steps
 echo "Starting denoising stage"
