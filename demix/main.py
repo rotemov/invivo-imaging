@@ -470,14 +470,14 @@ else:
 if proc.lower() == 'y':
     suffix = ''
 
-    io.imsave(PATH + '/spatial_footprints' + suffix + '.tif', X2)
-    io.imsave(PATH + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :nCells])
-    io.imsave(PATH + '/temporal_traces' + suffix + '.tif', beta_hat2)
-    io.imsave(PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
-    io.imsave(PATH + '/residual_var' + suffix + '.tif', res)
-    io.imsave(PATH + '/ref_im' + suffix + '.tif', ref_im)
+    io.imsave(PLOT_PATH + '/spatial_footprints' + suffix + '.tif', X2)
+    io.imsave(PLOT_PATH + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :nCells])
+    io.imsave(PLOT_PATH + '/temporal_traces' + suffix + '.tif', beta_hat2)
+    io.imsave(PLOT_PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
+    io.imsave(PLOT_PATH + '/residual_var' + suffix + '.tif', res)
+    io.imsave(PLOT_PATH + '/ref_im' + suffix + '.tif', ref_im)
 
-    with open(PATH + '/ref' + suffix + '.tif', 'wb') as f:
+    with open(PLOT_PATH + '/ref' + suffix + '.tif', 'wb') as f:
         pickle.dump([movB.shape[1::-1], ref_im], f)
 
     cell_locations = center_of_mass(X2[:, 0].reshape(movB.shape[1::-1]).transpose(1, 0))

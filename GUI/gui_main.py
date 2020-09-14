@@ -179,7 +179,7 @@ def run_command(values):
     ssh_line = ssh_line.format(values['password'], running_line)
     try:
         subprocess.check_call(['ubuntu1804', 'run', ssh_line])
-        with open("run_params/params_" + datetime.now().strftime(DATETIME_FORMAT), 'wb') as f:
+        with open("run_params/params_" + datetime.now().strftime(DATETIME_FORMAT) + ".pkl", 'wb') as f:
             pickle.dump(values, f)
     except CalledProcessError:
         print("Please re-check parameters and password")
