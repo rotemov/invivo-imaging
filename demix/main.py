@@ -35,11 +35,11 @@ update_ac_keep_shape = bool(int(sys.argv[18]))
 bg_reg_lr = float(sys.argv[19])
 bg_reg_max_iterations = int(sys.argv[20])
 demix_all_flag = bool(int(sys.argv[21]))
-
-#cells = [int(idx) for idx in list("1346")]
+hp_spacing = int(sys.argv[22])
+nmf_cells = [int(idx) for idx in list(sys.argv[23])]
 
 print("Demixing Start")
-print(data_dir)
+print(str(sys.argv))
 
 GUI = False
 OPTOPATCH_STIM = False
@@ -151,7 +151,7 @@ if window_length > total_frames - trunc_start or demix_all_flag:
 first_frame = trunc_start
 last_frame = trunc_start + window_length
 
-movHP = sup.hp_filt_data(movB, spacing=10)
+movHP = sup.hp_filt_data(movB, spacing=hp_spacing)
 
 rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.zeros(1), ff_ini=np.zeros(1),
 
@@ -249,11 +249,6 @@ plt.figure(figsize=(25, 3 * cell_ct))
 
 ref_im = np.std(movB, axis=2).transpose(1, 0)
 
-print("ref im shape: " + str(ref_im.shape))
-print("ref im flatten: " + str(np.percentile(ref_im.flatten(), [1, 99])))
-print("num_cells: " + str(cell_ct))
-print("rlt: " + str(rlt))
-
 for cell_num in range(cell_ct):
     plt.subplot(cell_ct, 2, 2 * cell_num + 1)
     plt.plot(rlt["fin_rlt"]["c"][:, cell_num])
@@ -280,8 +275,8 @@ if GUI:
 # TODO: Add input from user for good / bad cells
 
 # rank of background to model, if none selected
+final_cells = nmf_cells
 bg_rank = bg_rank
-final_cells = [0]
 
 nCells = len(final_cells)
 

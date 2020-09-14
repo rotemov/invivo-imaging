@@ -42,7 +42,9 @@ BG_REG_LR=${30:-"0.001"}
 DEMIX_START=${31:-"1"}
 DEMIX_LENGTH=${32:-"10000"}
 DEMIX_ALL_FLAG=${33:-"1"}
-STIM_DIR=${34:-""}
+HP_SPACING=${34:-"10"}
+NMF_CELLS=${35:-"0"}
+STIM_DIR=${36:-""}
 
 # Deactivating the CL args to enable sourcing in the script
 set --
@@ -83,6 +85,8 @@ echo "Update AC merge overlap threshold: "$UPDATE_AC_MERGE_OVERLAP_THR
 echo "Update AC keep shape: "$UPDATE_AC_KEEP_SHAPE
 echo "Background regression learning rate: "$BG_REG_LR
 echo "Background regression max iterations: "$BG_REG_MAX_ITER
+echo "High pass filter spacing: "$HP_SPACING
+echo "NMF selected cells: "$NMF_CELLS
 
 echo -e "\n"
 
@@ -129,7 +133,7 @@ if [ $DEMIX == "1" ]; then
   "$DEMIX_START" "$DEMIX_LENGTH" "$TH_LVL" "$PASS_NUM" "$BG_MASK" "$MERGE_CORR_THR" \
   "$SUP_ONLY" "$REMOVE_DIMMEST" "$RESIDUAL_CUT" "$UPDATE_AC_MAX_ITER" "$UPDATE_AC_TOL" \
   "$UPDATE_AC_MERGE_OVERLAP_THR" "$UPDATE_AC_KEEP_SHAPE" "$BG_REG_LR" "$BG_REG_MAX_ITER" \
-  "$DEMIX_ALL_FLAG"
+  "$DEMIX_ALL_FLAG" "$HP_SPACING" "$NMF_CELLS"
   echo "Demixing stage done"
 fi
 

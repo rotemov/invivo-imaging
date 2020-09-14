@@ -20,14 +20,15 @@ CHECK_BOX_SIZE = (25, 1)
 INPUT_SIZE = (10, 1)
 LABEL_SIZE = (25, 1)
 SLIDER_SIZE = (34, 20)
-NUM_PARAMS = 35
+NUM_PARAMS = 37
 DATETIME_FORMAT = "%d%m%Y_%H%M%S"
 NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 'max_size',
                      'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
                      'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
                      'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
                      'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length',]
-DIR_PARAMS_IDX = [1, 13, 31]
+DIR_PARAMS_IDX = [1, 13, 34]
+MAX_NMF_ELEMENTS = 15
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -161,7 +162,9 @@ def get_args_array(values):
     args[31] = values['demix_start']
     args[32] = values['demix_length']
     args[33] = values['demix_all_frame_flag']
-    args[34] = values['stim_dir']
+    args[34] = parse_nmf_checkboxes(values)
+    args[35] = int(values['sample_freq']/100)
+    args[36] = values['stim_dir']
 
     if values['network_drive_flag']:
         for idx in DIR_PARAMS_IDX:
@@ -179,18 +182,26 @@ def run_command(values):
     ssh_line = ssh_line.format(values['password'], running_line)
     try:
         subprocess.check_call(['ubuntu1804', 'run', ssh_line])
-        with open("run_params/params_" + datetime.now().strftime(DATETIME_FORMAT), 'wb') as f:
+        with open(values['output_dir'] + "/params_" + datetime.now().strftime(DATETIME_FORMAT) + '.pkl', 'wb') as f:
             pickle.dump(values, f)
     except CalledProcessError:
-        print("Please re-check parameters and password")
+        sg.Popup('Please re-check parameters and password')
     return ssh_line
 
 
 def get_nmf_trace_checkboxes(num_elements):
     cbs = [None] * num_elements
-    for i in range(num_elements):
-        cbs[i] = sg.Checkbox(str(i), default=False, key='nmf_flag_'+str(i))
+    cbs[0] = sg.Checkbox(str(0), default=False, key='nmf_flag_'+str(0), disabled=False, visible=True)
+    for i in range(1, num_elements):
+        cbs[i] = sg.Checkbox(str(i), default=False, key='nmf_flag_'+str(i), disabled=True, visible=True)
     return cbs
+
+
+def enable_nmf_checkboxes(cbs, num_elements):
+    for i in range(num_elements):
+        cbs[i].update(disabled=False, visible=True)
+    for i in range(num_elements, MAX_NMF_ELEMENTS):
+        cbs[i].update(disabled=True, value=False)
 
 
 def parse_nmf_checkboxes(values):
@@ -277,12 +288,12 @@ def main():
     nmf_traces_graph = sg.Graph(canvas_size=IM_SIZE, graph_bottom_left=(0, 0), graph_top_right=IM_SIZE,
                                 enable_events=True, key='nmf_traces_graph')
 
-    nmf_trace_checkboxes = get_nmf_trace_checkboxes(1)
+    nmf_trace_checkboxes = get_nmf_trace_checkboxes(MAX_NMF_ELEMENTS)
     nmf_traces = [
         [sg.Text('Choose the ones that look like cells:')],
         [nmf_traces_graph],
         [sg.Text('# of elements', size=LABEL_SIZE),
-         sg.Slider(range=(1, 15), orientation='h', size=SLIDER_SIZE, key='nmf_num_elements', default_value=1, enable_events=True)],
+         sg.Slider(range=(1, MAX_NMF_ELEMENTS), orientation='h', size=SLIDER_SIZE, key='nmf_num_elements', default_value=1, enable_events=True)],
         nmf_trace_checkboxes
     ]
 
@@ -333,7 +344,6 @@ def main():
 
     while True:
         event, values = window.read()
-        print(event, values)
         if event == sg.WIN_CLOSED or event == 'Quit':
             break
         if event == 'Run':
@@ -357,7 +367,7 @@ def main():
         if event == 'Open zoomable plot':
             open_traces_plot(values, 'temporal_traces.tif', 'spatial_footprints.tif', 'ref.tif')
         if event == 'nmf_num_elements':
-            nmf_trace_checkboxes.update(get_nmf_trace_checkboxes(int(values['nmf_num_elements'])))
+            enable_nmf_checkboxes(nmf_trace_checkboxes, int(values['nmf_num_elements']))
 
         for key in NUM_FIELD_KEYS:
             if event == key:
