@@ -6,9 +6,38 @@ Pipeline should work from Ubuntu and Windows 10 machines connected to HUJI's net
 
 ## Installation
 
-1. For windows users please install Ubuntu 18.04 LTS from the Microsoft Store (don't worry this won't change your OS).
+1. For windows users:
+
+    a. Enable WSL by opening the powershell as administrator and running:
+    
+            
+            
+ please install Ubuntu 18.04 LTS from the Microsoft Store (don't worry this won't change your OS).
 
 2. Install Anaconda from https://www.anaconda.com/products/individual (preferably 64-bit).
+
+3. Install python 3.6 from https://www.python.org/downloads/
+
+4.a. Click Code --> Download ZIP at the top of this page
+  
+  b. Unzip the pipeline where you want it (if you don't have an unzipper use https://www.7-zip.org/)
+  
+5. Open an Anaconda3 terminal:
+    
+    a. Run the command:
+    
+        cd <directory where you installed the pipeline>\invivo-imaging\GUI
+        
+       For example I installed on my desktop and ran:
+    
+        cd  C:\Users\yoavalab.user\Desktop\invivo-imaging\GUI
+        
+    b. Run the command:
+    
+       conda env create -f invivo-gui.yml
+       
+    c. 
+        
 
 3. git clone
 
