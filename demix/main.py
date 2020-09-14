@@ -34,7 +34,7 @@ update_ac_merge_overlap_thr = float(sys.argv[17])
 update_ac_keep_shape = bool(int(sys.argv[18]))
 bg_reg_lr = float(sys.argv[19])
 bg_reg_max_iterations = int(sys.argv[20])
-
+demix_all_flag = bool(int(sys.argv[21]))
 
 print("Demixing Start")
 print(data_dir)
@@ -139,6 +139,13 @@ if bg_flag:
 start = time.time()
 
 # select which window to demix on
+## Making sure valid input
+total_frames = movB.shape[2]
+if trunc_start < 1 or demix_all_flag:
+    trunc_start = 1
+if window_length > total_frames - trunc_start or demix_all_flag:
+    window_length = total_frames - trunc_start - 10
+
 first_frame = trunc_start
 last_frame = trunc_start + window_length
 
@@ -156,11 +163,11 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
 
                           # minimum pixel count of a superpixel
                           # don't need to change these unless cell sizes change
-                          length_cut=[int(patch_size_edge**2 / 5)],
+                          length_cut=[int(patch_size_edge ** 2 / 5)],
 
                           # maximum pixel count of a superpixel
                           # don't need to change these unless cell sizes change
-                          length_max=[patch_size_edge**2 * 2],
+                          length_max=[patch_size_edge ** 2 * 2],
 
                           patch_size=[patch_size_edge, patch_size_edge],
 
@@ -233,7 +240,6 @@ for p in range(num_pass):
     # plt.tight_layout()
     save_plot('super_pixels')
 
-
 # plot all cell traces and footprints from NMF
 cell_ct = rlt["fin_rlt"]["c"].shape[1]
 
@@ -263,7 +269,6 @@ for cell_num in range(cell_ct):
     plt.imshow(cell_loc, cmap='jet', alpha=0.5)
 
 save_plot('NMF_Traces')
-
 
 if GUI:
     ask_proceed()
@@ -317,7 +322,6 @@ a, c, b, fb, ff, res, corr_img_all_r, num_list = sup.update_AC_bg_l2_Y(movVec[:,
                                                                        keep_shape=update_ac_keep_shape
                                                                        )
 
-
 # plot all cell traces and footprints
 cell_ct = c.shape[1]
 
@@ -338,7 +342,6 @@ for cell_num in range(cell_ct):
     plt.colorbar()
 save_plot('Intermediate_Traces')
 
-
 # plot all background traces and footprints
 bg_rank = fb.shape[1]
 
@@ -353,7 +356,6 @@ for bkgd_num in range(bg_rank):
     plt.imshow(bkgd_comp)
     plt.colorbar()
 save_plot('BG_Traces')
-
 
 if GUI:
     ask_proceed()
@@ -443,7 +445,6 @@ num_traces = beta_hat2.shape[0]
 plt.figure(figsize=(25, 3 * num_traces))
 ref_im = np.std(movB, axis=2).transpose(1, 0)
 
-
 for idx in range(num_traces):
     plt.subplot(num_traces, 2, 2 * idx + 1)
     plt.plot(beta_hat2[idx, :])
@@ -476,7 +477,6 @@ if proc.lower() == 'y':
 
     with open(PATH + '/ref' + suffix + '.tif', 'wb') as f:
         pickle.dump([movB.shape[1::-1], ref_im], f)
-
 
     cell_locations = center_of_mass(X2[:, 0].reshape(movB.shape[1::-1]).transpose(1, 0))
     for idx in range(nCells - 1):

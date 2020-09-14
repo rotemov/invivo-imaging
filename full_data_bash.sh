@@ -39,6 +39,9 @@ UPDATE_AC_TOL=${27:-"1e-8"}
 UPDATE_AC_MERGE_OVERLAP_THR=${28:-"0.8"}
 BG_REG_MAX_ITER=${29:-"1000"}
 BG_REG_LR=${30:-"0.001"}
+DEMIX_START=${31:-"1"}
+DEMIX_LENGTH=${32:-"10000"}
+DEMIX_ALL_FLAG=${33:-"1"}
 STIM_DIR=${31:-""}
 
 # Deactivating the CL args to enable sourcing in the script
@@ -120,9 +123,10 @@ cd ../demix
 if [ $DEMIX == "1" ]; then
   echo "Starting demixing stage"
   python main.py "$DATA" "$CUTOFF_POINT" "$CORR_TH_FIX" "$PATCH_SIZE" "$BG_RANK" \
-  "$TRUNC_START" "$TRUNC_LENGTH" "$TH_LVL" "$PASS_NUM" "$BG_MASK" "$MERGE_CORR_THR" \
+  "$DEMIX_START" "$DEMIX_LENGTH" "$TH_LVL" "$PASS_NUM" "$BG_MASK" "$MERGE_CORR_THR" \
   "$SUP_ONLY" "$REMOVE_DIMMEST" "$RESIDUAL_CUT" "$UPDATE_AC_MAX_ITER" "$UPDATE_AC_TOL" \
-  "$UPDATE_AC_MERGE_OVERLAP_THR" "$UPDATE_AC_KEEP_SHAPE" "$BG_REG_LR" "$BG_REG_MAX_ITER"
+  "$UPDATE_AC_MERGE_OVERLAP_THR" "$UPDATE_AC_KEEP_SHAPE" "$BG_REG_LR" "$BG_REG_MAX_ITER" \
+  "$DEMIX_ALL_FLAG"
   echo "Demixing stage done"
 fi
 

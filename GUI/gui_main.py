@@ -20,7 +20,14 @@ CHECK_BOX_SIZE = (25, 1)
 INPUT_SIZE = (10, 1)
 LABEL_SIZE = (25, 1)
 SLIDER_SIZE = (34, 20)
+NUM_PARAMS = 35
 DATETIME_FORMAT = "%d/%m/%Y_%H:%M:%S"
+NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 'max_size',
+                     'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
+                     'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
+                     'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
+                     'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length']
+DIR_PARAMS_IDX = [1, 13, 31]
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -71,18 +78,14 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
         X2 = skio.imread(footprint_full)
         with open(ref_full, 'rb') as f:
             mov_dims, ref_im = pickle.load(f)
-
         num_traces = beta_hat2.shape[0]
         fig = plt.figure(figsize=(25, 3 * num_traces))
-
         for idx in range(num_traces):
             plt.subplot(num_traces, 2, 2 * idx + 1)
             plt.plot(beta_hat2[idx, :])
-
             plt.subplot(num_traces, 2, 2 * idx + 2)
             lower, upper = np.percentile(ref_im.flatten(), [1, 99])
             plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
-
             cell_loc = X2[:, idx].reshape(mov_dims)
             cell_loc = np.ma.masked_where(abs(cell_loc) < 1e-8, cell_loc)
             plt.imshow(cell_loc, cmap='jet', alpha=0.5)
@@ -123,15 +126,8 @@ def nw_drive_path(path):
     return re.sub('[a-zA-Z]:/', '/ems/elsc-labs/adam-y/', path)
 
 
-def get_file_and_path(values):
-    path, file = os.path.split(values['input_file'])
-    if values['network_drive_flag']:
-        path = nw_drive_path(path)
-    return (path, file)
-
-
 def get_args_array(values):
-    args = [None] * 32
+    args = [None] * NUM_PARAMS
     args[0] = "/opt/slurm/bin/sbatch /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/full_data_bash.sh"
     args[1], args[2] = os.path.split(values['input_file'])
     args[3] = values['normcorre']
@@ -144,7 +140,7 @@ def get_args_array(values):
     args[10] = values['bg_rank']
     args[11] = values['trunc_start']
     args[12] = values['trunc_length']
-    args[13] = nw_drive_path(values['output_dir'])
+    args[13] = values['output_dir']
     args[14] = values['mov_in']
     args[15] = values['detr_spacing']
     args[16] = values['row_blocks']
@@ -162,7 +158,15 @@ def get_args_array(values):
     args[28] = values['update_ac_merge_overlap_thr']
     args[29] = values['bg_reg_max_iter']
     args[30] = values['bg_reg_lr']
-    args[31] = nw_drive_path(values['stim_dir'])
+    args[31] = values['demix_start']
+    args[32] = values['demix_length']
+    args[33] = values['demix_all_frame_flag']
+    args[34] = values['stim_dir']
+
+    if values['network_drive_flag']:
+        for idx in DIR_PARAMS_IDX:
+            args[idx] = nw_drive_path(args[idx])
+
     for i in range(len(args)):
         if type(args[i]) == bool:
             args[i] = int(args[i])
@@ -202,10 +206,15 @@ def main():
          sg.Slider(range=(80, 99), orientation='h', size=SLIDER_SIZE, key='cut_off_point', default_value=90)],
         [sg.Text('Correlation threshold fix %', size=LABEL_SIZE),
          sg.Slider(range=(30, 60), orientation='h', size=SLIDER_SIZE, key='corr_th_fix', default_value=45)],
-        [sg.Text('Start frame', size=LABEL_SIZE),
+        [sg.Text('Denoise start frame', size=LABEL_SIZE),
          sg.In(default_text='1', size=INPUT_SIZE, key='trunc_start', enable_events=True),
          sg.Text('Number of frames', size=LABEL_SIZE),
          sg.In(default_text='5000', size=INPUT_SIZE, key='trunc_length', enable_events=True)],
+        [sg.Text('Demix start frame', size=LABEL_SIZE),
+         sg.In(default_text='1', size=INPUT_SIZE, key='demix_start', enable_events=True),
+         sg.Text('Number of frames', size=LABEL_SIZE),
+         sg.In(default_text='10000', size=INPUT_SIZE, key='demix_length', enable_events=True),
+         sg.Checkbox('All frames', default=True, key='demix_all_frame_flag', size=CHECK_BOX_SIZE)],
         [sg.Text('Cell diameter', size=LABEL_SIZE),
          sg.In(default_text='10', size=INPUT_SIZE, key='patch_size_edge', enable_events=True)],
         [sg.Text('Sample frequency[Hz]', size=LABEL_SIZE),
@@ -330,12 +339,8 @@ def main():
         if event == 'Open zoomable plot':
             open_traces_plot(values, 'temporal_traces.tif', 'spatial_footprints.tif', 'ref.tif')
 
-        number_field_keys = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 'max_size',
-                             'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
-                             'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
-                             'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
-                             'bg_reg_lr', 'bg_reg_max_iter']
-        for key in number_field_keys:
+
+        for key in NUM_FIELD_KEYS:
             if event == key:
                 enforce_numbers(window, values, key)
 
