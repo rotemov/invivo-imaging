@@ -28,10 +28,12 @@ NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 
                      'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
                      'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
                      'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length']
-DIR_PARAMS_IDX = [1, 13, 34]
+DIR_PARAMS_IDX = [1, 13, 36]
 MAX_NMF_ELEMENTS = 15
 FREQ_TO_HP_SPACING = 100
-DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plots_graph', '-TABGROUP-', '__len__', 'final_traces_graph']
+LOAD_PARAMS_DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plots_graph', '-TABGROUP-',
+                           '__len__', 'final_traces_graph', 'param_file_browser', 'input_file_browser',
+                           'output_dir_browser', 'stim_dir_browser']
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -165,8 +167,8 @@ def get_args_array(values):
     args[31] = values['demix_start']
     args[32] = values['demix_length']
     args[33] = values['demix_all_frame_flag']
-    args[34] = parse_nmf_checkboxes(values)
-    args[35] = int(int(values['sample_freq'])/FREQ_TO_HP_SPACING)
+    args[34] = int(int(values['sample_freq'])/FREQ_TO_HP_SPACING)
+    args[35] = parse_nmf_checkboxes(values)
     args[36] = values['stim_dir']
 
     if values['network_drive_flag']:
@@ -184,12 +186,16 @@ def run_command(values):
     running_line = " ".join([str(arg) for arg in get_args_array(values)])
     ssh_line = ssh_line.format(values['password'], running_line)
     try:
-        subprocess.check_call(['ubuntu1804', 'run', ssh_line])
-        with open(values['output_dir'] + "/params_" + datetime.now().strftime(DATETIME_FORMAT) + '.pkl', 'wb') as f:
+        output = subprocess.check_output(['ubuntu1804', 'run', ssh_line])
+        job_number = [int(s) for s in output.decode('utf-8').split() if s.isdigit()][0]
+        with open(values['output_dir'] + "/params_" + str(job_number) + '.pkl', 'wb') as f:
+            values['password'] = ""
+            values['last job'] = "Last job ran: " + str(job_number)
             pickle.dump(values, f)
     except CalledProcessError:
+        job_number = 'Job couldn\'t start'
         sg.Popup('Please re-check parameters and password')
-    return ssh_line
+    return job_number
 
 
 def get_nmf_trace_checkboxes(num_elements):
@@ -220,13 +226,10 @@ def load_params_from_file(window, values):
         with open(values['param_file'], 'rb') as f:
             prev_values = pickle.load(f)
             for key in prev_values.keys():
-                if key in values.keys() and key not in DONT_UPDATE:
+                if key in values.keys() and key not in LOAD_PARAMS_DONT_UPDATE:
                     window[key].update(prev_values[key])
     except (FileNotFoundError, ValueError, UnpicklingError) as e:
         sg.popup("Not a param file\n" + str(e))
-    except BaseException as e:
-        print(str(e))
-        print(key)
 
 
 def main():
@@ -237,7 +240,7 @@ def main():
          sg.FileBrowse(key='input_file_browser')],
         [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir',
                                                                      default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/output'),
-         sg.FolderBrowse(key='output_folder_browser')],
+         sg.FolderBrowse(key='output_dir_browser')],
         [sg.Checkbox('From network drive', size=CHECK_BOX_SIZE, default=False, key='network_drive_flag')],
         [sg.Text('Cluster password', size=LABEL_SIZE), sg.InputText('', key='password', password_char='*')],
         [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre")],
@@ -262,6 +265,7 @@ def main():
          sg.In(default_text='30', size=INPUT_SIZE, key='patch_size_edge', enable_events=True)],
         [sg.Text('Sample frequency[Hz]', size=LABEL_SIZE),
          sg.In(default_text='1000', size=INPUT_SIZE, key='sample_freq', enable_events=True)],
+        [sg.Text('Last job ran: ', size=LABEL_SIZE, key="last_job")]
     ]
 
     advanced_params = [
@@ -295,7 +299,7 @@ def main():
         [sg.Text('BGR max iterations', size=LABEL_SIZE),
          sg.In(default_text='1000', size=INPUT_SIZE, key='bg_reg_max_iter', enable_events=True)],
         [sg.Text('Registered movie name', size=LABEL_SIZE), sg.InputText(key='mov_in', default_text='movReg.tif')],
-        [sg.Text('Stimulation dir: ', size=LABEL_SIZE), sg.InputText(key='stim_dir'), sg.FolderBrowse('stim_dir_browser')],
+        [sg.Text('Stimulation dir: ', size=LABEL_SIZE), sg.InputText(key='stim_dir'), sg.FolderBrowse(key='stim_dir_browser')],
         [sg.Checkbox('Background mask', size=CHECK_BOX_SIZE, default=False, key="bg_mask")],
         [sg.Text('Min cell area (pix)', size=LABEL_SIZE),
          sg.In(default_text='10', size=INPUT_SIZE, key='min_size', enable_events=True),
@@ -365,7 +369,8 @@ def main():
         if event == sg.WIN_CLOSED or event == 'Quit':
             break
         if event == 'Run':
-            print(run_command(values))
+            last_job = run_command(values)
+            window['last_job'].update("Last job ran: " + str(last_job))
         if event == 'Help':
             print("Link to github appeared")
         if event == 'Load outputs':
