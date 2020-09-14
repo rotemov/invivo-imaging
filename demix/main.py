@@ -36,6 +36,8 @@ bg_reg_lr = float(sys.argv[19])
 bg_reg_max_iterations = int(sys.argv[20])
 demix_all_flag = bool(int(sys.argv[21]))
 
+#cells = [int(idx) for idx in list("1346")]
+
 print("Demixing Start")
 print(data_dir)
 

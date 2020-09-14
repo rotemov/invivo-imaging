@@ -21,12 +21,12 @@ INPUT_SIZE = (10, 1)
 LABEL_SIZE = (25, 1)
 SLIDER_SIZE = (34, 20)
 NUM_PARAMS = 35
-DATETIME_FORMAT = "%d/%m/%Y_%H:%M:%S"
+DATETIME_FORMAT = "%d%m%Y_%H%M%S"
 NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 'max_size',
                      'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
                      'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
                      'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
-                     'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length']
+                     'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length',]
 DIR_PARAMS_IDX = [1, 13, 31]
 
 
@@ -179,12 +179,26 @@ def run_command(values):
     ssh_line = ssh_line.format(values['password'], running_line)
     try:
         subprocess.check_call(['ubuntu1804', 'run', ssh_line])
-        with open("run_params/params_" + values['input_file'] + "_" + datetime.now().strftime(DATETIME_FORMAT),
-                  'wb') as f:
+        with open("run_params/params_" + datetime.now().strftime(DATETIME_FORMAT), 'wb') as f:
             pickle.dump(values, f)
     except CalledProcessError:
         print("Please re-check parameters and password")
     return ssh_line
+
+
+def get_nmf_trace_checkboxes(num_elements):
+    cbs = [None] * num_elements
+    for i in range(num_elements):
+        cbs[i] = sg.Checkbox(str(i), default=False, key='nmf_flag_'+str(i))
+    return cbs
+
+
+def parse_nmf_checkboxes(values):
+    cells = ""
+    for i in range(int(values['nmf_num_elements'])):
+        if values['nmf_flag_'+str(i)]:
+            cells += str(i)
+    return cells
 
 
 def main():
@@ -216,7 +230,7 @@ def main():
          sg.In(default_text='10000', size=INPUT_SIZE, key='demix_length', enable_events=True),
          sg.Checkbox('All frames', default=True, key='demix_all_frame_flag', size=CHECK_BOX_SIZE)],
         [sg.Text('Cell diameter', size=LABEL_SIZE),
-         sg.In(default_text='10', size=INPUT_SIZE, key='patch_size_edge', enable_events=True)],
+         sg.In(default_text='30', size=INPUT_SIZE, key='patch_size_edge', enable_events=True)],
         [sg.Text('Sample frequency[Hz]', size=LABEL_SIZE),
          sg.In(default_text='1000', size=INPUT_SIZE, key='sample_freq', enable_events=True)],
     ]
@@ -263,9 +277,13 @@ def main():
     nmf_traces_graph = sg.Graph(canvas_size=IM_SIZE, graph_bottom_left=(0, 0), graph_top_right=IM_SIZE,
                                 enable_events=True, key='nmf_traces_graph')
 
+    nmf_trace_checkboxes = get_nmf_trace_checkboxes(1)
     nmf_traces = [
         [sg.Text('Choose the ones that look like cells:')],
-        [nmf_traces_graph]
+        [nmf_traces_graph],
+        [sg.Text('# of elements', size=LABEL_SIZE),
+         sg.Slider(range=(1, 15), orientation='h', size=SLIDER_SIZE, key='nmf_num_elements', default_value=1, enable_events=True)],
+        nmf_trace_checkboxes
     ]
 
     super_pixels_graph = sg.Graph(canvas_size=IM_SIZE, graph_bottom_left=(0, 0), graph_top_right=IM_SIZE,
@@ -280,7 +298,7 @@ def main():
                                   enable_events=True, key='final_traces_graph')
 
     final_traces = [
-        [sg.Text('These are the final traces of the cells you chose:')],
+        [sg.Text('These are the final traces:')],
         [final_traces_graph],
         [sg.Button('Open zoomable plot')]
     ]
@@ -338,7 +356,8 @@ def main():
             load_picture_on_canvas(values, other_plots_graph, 'Temporal_Correlations.png')
         if event == 'Open zoomable plot':
             open_traces_plot(values, 'temporal_traces.tif', 'spatial_footprints.tif', 'ref.tif')
-
+        if event == 'nmf_num_elements':
+            nmf_trace_checkboxes.update(get_nmf_trace_checkboxes(int(values['nmf_num_elements'])))
 
         for key in NUM_FIELD_KEYS:
             if event == key:

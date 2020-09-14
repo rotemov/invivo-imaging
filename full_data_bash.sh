@@ -42,7 +42,7 @@ BG_REG_LR=${30:-"0.001"}
 DEMIX_START=${31:-"1"}
 DEMIX_LENGTH=${32:-"10000"}
 DEMIX_ALL_FLAG=${33:-"1"}
-STIM_DIR=${31:-""}
+STIM_DIR=${34:-""}
 
 # Deactivating the CL args to enable sourcing in the script
 set --
@@ -51,6 +51,7 @@ set --
 echo "Paramaters: "
 echo "Data directory: "$DATA
 echo "File name: "$FN
+echo "Output directory: "$OUTPUT
 echo "NormCoRRe: "$NORMCORRE
 echo "Detrending: "$DETREND
 echo "Motion correction: "$MOCO
@@ -61,7 +62,9 @@ echo "Patch size: "$PATCH_SIZE
 echo "Background rank: "$BG_RANK
 echo "Truncation start: "$TRUNC_START
 echo "Truncation length: "$TRUNC_LENGTH
-echo "Output directory: "$OUTPUT
+echo "Demix start: "$DEMIX_START
+echo "Demix length: "$DEMIX_LENGTH
+echo "Demix all flag: "$DEMIX_DEMIX_ALL_FLAG
 echo "Registered movie: "$MOV_IN
 echo "Detrending spacing: "$DETR_SPACING
 echo "Row blocks: "$ROW_BLOCKS
