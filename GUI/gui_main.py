@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 import subprocess
 from subprocess import CalledProcessError
 import pickle
+from pickle import UnpicklingError
 from datetime import datetime
 import re
 
@@ -26,9 +27,11 @@ NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 
                      'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
                      'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
                      'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
-                     'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length',]
+                     'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length']
 DIR_PARAMS_IDX = [1, 13, 34]
 MAX_NMF_ELEMENTS = 15
+FREQ_TO_HP_SPACING = 100
+DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plots_graph', '-TABGROUP-', '__len__', 'final_traces_graph']
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -163,7 +166,7 @@ def get_args_array(values):
     args[32] = values['demix_length']
     args[33] = values['demix_all_frame_flag']
     args[34] = parse_nmf_checkboxes(values)
-    args[35] = int(values['sample_freq']/100)
+    args[35] = int(int(values['sample_freq'])/FREQ_TO_HP_SPACING)
     args[36] = values['stim_dir']
 
     if values['network_drive_flag']:
@@ -191,7 +194,7 @@ def run_command(values):
 
 def get_nmf_trace_checkboxes(num_elements):
     cbs = [None] * num_elements
-    cbs[0] = sg.Checkbox(str(0), default=False, key='nmf_flag_'+str(0), disabled=False, visible=True)
+    cbs[0] = sg.Checkbox(str(0), default=True, key='nmf_flag_'+str(0), disabled=False, visible=True)
     for i in range(1, num_elements):
         cbs[i] = sg.Checkbox(str(i), default=False, key='nmf_flag_'+str(i), disabled=True, visible=True)
     return cbs
@@ -212,14 +215,29 @@ def parse_nmf_checkboxes(values):
     return cells
 
 
+def load_params_from_file(window, values):
+    try:
+        with open(values['param_file'], 'rb') as f:
+            prev_values = pickle.load(f)
+            for key in prev_values.keys():
+                if key in values.keys() and key not in DONT_UPDATE:
+                    window[key].update(prev_values[key])
+    except (FileNotFoundError, ValueError, UnpicklingError) as e:
+        sg.popup("Not a param file\n" + str(e))
+    except BaseException as e:
+        print(str(e))
+        print(key)
+
+
 def main():
     main_runner = [
+        [sg.Text('Param file:', size=LABEL_SIZE), sg.InputText(key='param_file'), sg.FileBrowse(key='param_file_browser'), sg.Button('Load params')],
         [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file',
                                                                default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/Sq_camera.bin'),
-         sg.FileBrowse()],
+         sg.FileBrowse(key='input_file_browser')],
         [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir',
                                                                      default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/output'),
-         sg.FolderBrowse()],
+         sg.FolderBrowse(key='output_folder_browser')],
         [sg.Checkbox('From network drive', size=CHECK_BOX_SIZE, default=False, key='network_drive_flag')],
         [sg.Text('Cluster password', size=LABEL_SIZE), sg.InputText('', key='password', password_char='*')],
         [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre")],
@@ -277,7 +295,7 @@ def main():
         [sg.Text('BGR max iterations', size=LABEL_SIZE),
          sg.In(default_text='1000', size=INPUT_SIZE, key='bg_reg_max_iter', enable_events=True)],
         [sg.Text('Registered movie name', size=LABEL_SIZE), sg.InputText(key='mov_in', default_text='movReg.tif')],
-        [sg.Text('Stimulation dir: ', size=LABEL_SIZE), sg.InputText(key='stim_dir'), sg.FolderBrowse()],
+        [sg.Text('Stimulation dir: ', size=LABEL_SIZE), sg.InputText(key='stim_dir'), sg.FolderBrowse('stim_dir_browser')],
         [sg.Checkbox('Background mask', size=CHECK_BOX_SIZE, default=False, key="bg_mask")],
         [sg.Text('Min cell area (pix)', size=LABEL_SIZE),
          sg.In(default_text='10', size=INPUT_SIZE, key='min_size', enable_events=True),
@@ -368,7 +386,9 @@ def main():
             open_traces_plot(values, 'temporal_traces.tif', 'spatial_footprints.tif', 'ref.tif')
         if event == 'nmf_num_elements':
             enable_nmf_checkboxes(nmf_trace_checkboxes, int(values['nmf_num_elements']))
-
+        if event == 'Load params':
+            load_params_from_file(window, values)
+            # event, values = window.read()
         for key in NUM_FIELD_KEYS:
             if event == key:
                 enforce_numbers(window, values, key)
