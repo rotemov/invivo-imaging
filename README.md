@@ -1,26 +1,37 @@
 # invivo-imaging (Adam Lab HUJI)
 
-Welcome to Yoav Adam's Lab @ HUJI - subversion of the invivo-imaging pipeline, tested on the ELSC cluster.
+Welcome to Yoav Adam's Lab @ HUJI - subversion of the invivo-imaging pipeline, for running the image processing pipeline on the ELSC cluster.
 
-Pipeline should work from Ubuntu and Windows 10 machines connected to HUJI's network / using the Samba VPN provided by HUJI.
+Pipeline was tested on Ubuntu and Windows 10 machines connected to HUJI's network / using Samba VPN https://ca.huji.ac.il/vpn.
+
+Feel free to open issues in the designated area in this page or to contact me directly: rotem.ovadia@mail.huji.ac.il.
 
 ## Installation
 
 1. For windows users:
 
-    a. Enable WSL by opening the powershell as administrator and running:
+    a. Enable WSL by opening the Windows PowerShell as administrator and running:
     
+        dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+    
+    b. Reboot the computer and allow updates        
             
-            
- please install Ubuntu 18.04 LTS from the Microsoft Store (don't worry this won't change your OS).
+    c. Install Ubuntu 18.04 LTS from the Microsoft Store (don't worry this won't change your OS).
+    
+    d. Open Ubuntu 18.04 LTS and follow the instructions in the terminal to create a user.
+    
+    e. In the terminal run the commands:
+    
+        sudo apt update
+        sudo apt install sshpass
 
 2. Install Anaconda from https://www.anaconda.com/products/individual (preferably 64-bit).
 
 3. Install python 3.6 from https://www.python.org/downloads/
 
-4.a. Click Code --> Download ZIP at the top of this page
+4.  a. Click Code --> Download ZIP (at the top of this page)
   
-  b. Unzip the pipeline where you want it (if you don't have an unzipper use https://www.7-zip.org/)
+    b. Unzip the pipeline where you want it (if you don't have an unzipper use https://www.7-zip.org/)
   
 5. Open an Anaconda3 terminal:
     
@@ -28,7 +39,7 @@ Pipeline should work from Ubuntu and Windows 10 machines connected to HUJI's net
     
         cd <directory where you installed the pipeline>\invivo-imaging\GUI
         
-       For example I installed on my desktop and ran:
+    For example I installed on my desktop and ran:
     
         cd  C:\Users\yoavalab.user\Desktop\invivo-imaging\GUI
         
@@ -36,14 +47,18 @@ Pipeline should work from Ubuntu and Windows 10 machines connected to HUJI's net
     
        conda env create -f invivo-gui.yml
        
-    c. 
-        
+## Running the pipeline
 
-3. git clone
+1. Open an Anaconda3 prompt and run the commands:
 
-4. conda create
+        conda activate invivo-gui
+        cd <directory where you installed the pipeline>\invivo-imaging\GUI
+        python gui_main.py
+    
+2. Choose the relevant files and tune the parameters according to the next section, when you are done click "Run".
 
-5. python GUI/main_gui.py
+## Parameter tuning
+
 
 
 # Original Docs

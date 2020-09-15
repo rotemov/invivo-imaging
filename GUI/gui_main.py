@@ -11,7 +11,6 @@ import subprocess
 from subprocess import CalledProcessError
 import pickle
 from pickle import UnpicklingError
-from datetime import datetime
 import re
 
 VERSION = 0.1
