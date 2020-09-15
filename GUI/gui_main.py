@@ -180,6 +180,10 @@ def get_args_array(values):
     return args
 
 
+def handle_called_process_error(msg):
+    sg.Popup(msg + '\nPlease re-check parameters and password')
+
+
 def run_command(values):
     ssh_line = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
     running_line = " ".join([str(arg) for arg in get_args_array(values)])
@@ -193,7 +197,7 @@ def run_command(values):
             pickle.dump(values, f)
     except CalledProcessError:
         job_number = 'Job couldn\'t start'
-        sg.Popup('Please re-check parameters and password')
+        handle_called_process_error("Job couldn't start")
     return job_number
 
 
@@ -229,6 +233,18 @@ def load_params_from_file(window, values):
                     window[key].update(prev_values[key])
     except (FileNotFoundError, ValueError, UnpicklingError) as e:
         sg.popup("Not a param file\n" + str(e))
+
+
+def print_logs(window, values):
+    ssh_line = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
+    running_line = "cat /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/logs/II_" + values['logs_job_id'] + ".log"
+    ssh_line = ssh_line.format(values['password'], running_line)
+    try:
+        output = subprocess.check_output(['ubuntu1804', 'run', ssh_line])
+        log_text = output.decode('utf-8')
+        window['logs_mline'].update(log_text)
+    except CalledProcessError:
+        handle_called_process_error("Log file didn't open")
 
 
 def main():
@@ -345,8 +361,10 @@ def main():
     ]
 
     logs = [
-        [sg.Text("Job ID", size=LABEL_SIZE), sg.In(size=INPUT_SIZE, key='job_id', enable_events=True, default_text='1'), sg.Button("Load logs")],
-        [sg.Output(size=IM_SIZE, key="output_logs", value="")]
+        [sg.Multiline(size=(110, 30), font='courier 10', background_color='black', text_color='white',
+                      key='logs_mline')],
+        [sg.T('Job ID:'), sg.Input(key='logs_job_id', focus=True, do_not_clear=False)],
+        [sg.Button('Load', key='logs_load', enable_events=True), sg.Button('Clear', key='logs_clear', enable_events=True)]
     ]
 
     # The TabgGroup layout - it must contain only Tabs
@@ -356,10 +374,9 @@ def main():
         sg.Tab('NMF Traces', nmf_traces, key='tab_nmf_traces'),
         sg.Tab('Super Pixels', super_pixels, key='tab_super_pixels'),
         sg.Tab('Final Traces', final_traces, key='tab_final_traces'),
-
+        sg.Tab('Other Plots', other_plots, key='tab_outputs'),
         sg.Tab('Logs', logs, key='tab_logs')
     ]]
-    # sg.Tab('Other Plots', other_plots, key='tab_outputs'),
 
     # The window layout - defines the entire window
     layout = [
@@ -377,6 +394,7 @@ def main():
             last_job = run_command(values)
             print(last_job)
             window['last_job'].update("Last job ran: " + str(last_job))
+            window['logs_job_id'].update(str(last_job))
         if event == 'Help':
             print("Link to github appeared")
         if event == 'Load outputs':
@@ -399,6 +417,10 @@ def main():
             enable_nmf_checkboxes(nmf_trace_checkboxes, int(values['nmf_num_elements']))
         if event == 'Load params':
             load_params_from_file(window, values)
+        if event == 'logs_load':
+            print_logs(window, values)
+        if event == 'Clear':
+            window['logs_mline'].update("")
 
         for key in NUM_FIELD_KEYS:
             if event == key:
