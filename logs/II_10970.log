@@ -1,0 +1,188 @@
+Paramaters: 
+Data directory: /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/6
+File name: Sq_camera.bin
+Output directory: /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/6/output
+NormCoRRe: 0
+Detrending: 0
+Motion correction: 0
+Demixing: 1
+Cutoff point: 0.9
+Correlation threshold fix: 0.45
+Patch size: 30
+Background rank: 4
+Truncation start: 1
+Truncation length: 5000
+Demix start: 1
+Demix length: 10000
+Demix all flag: 
+Registered movie: movReg.tif
+Detrending spacing: 5000
+Row blocks: 4
+Column blocks: 2
+Stimulation directory: 
+Threshold level: 4
+Number of passes: 1
+Background mask: 0
+Merge correlation threshold: 0.8
+Quick run: 0
+Remove dimmest: 0
+Residual cut: 0.6
+Update AC max iterations: 35
+Update AC tol: 1e-8
+Update AC merge overlap threshold: 0.8
+Update AC keep shape: 1
+Background regression learning rate: 0.001
+Background regression max iterations: 1000
+High pass filter spacing: 10
+NMF selected cells: 0
+
+
+Intel(R) Parallel Studio XE 2020 Update 2 for Linux*
+Copyright 2009-2020 Intel Corporation.
+bashrc sourced
+invivo env activated
+
+
+Starting denoising stage
+Skipping NormCoRRe
+Skipping detrending
+Skipping motion_correction
+Denoising stage done
+
+
+Starting demixing stage
+Demixing Start
+['main.py', '/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/6', '0.9', '0.45', '30', '4', '1', '10000', '4', '1', '0', '0.8', '0', '0', '0.6', '35', '1e-8', '0.8', '1', '0.001', '1000', '1', '10', '0']
+Movie dimensions: (96, 128, 64900)
+Plot saved: Average.png
+Binned movie dimensions:(48, 64, 64900)
+Plot saved: Average_Binned_Movie.png
+start 1 pass!
+find superpixels!
+27.134083032608032
+rank 1 svd!
+14.909250736236572
+Find pure superpixels! Number of patches: 20
+0 30 0 30
+30 60 0 30
+60 90 0 30
+90 96 0 30
+0 30 30 60
+30 60 30 60
+60 90 30 60
+90 96 30 60
+0 30 60 90
+30 60 60 90
+60 90 60 90
+90 96 60 90
+0 30 90 120
+30 60 90 120
+60 90 90 120
+90 96 90 120
+0 30 120 128
+30 60 120 128
+60 90 120 128
+90 96 120 128
+0.0024106502532958984
+prepare iteration!
+5.080629825592041
+74.79425311088562
+start 1 pass iteration!
+a.shape = (12288, 0); c.shape = (64889, 0)
+time: 5.784759044647217
+time: 5.785662651062012
+time: 5.782782793045044
+no merge!
+time: 12.349568367004395
+time: 5.786261558532715
+time: 5.786135911941528
+time: 5.783605098724365
+no merge!
+time: 12.364243030548096
+time: 5.7837700843811035
+time: 5.782179355621338
+time: 5.783458709716797
+no merge!
+time: 12.351980924606323
+time: 5.784622669219971
+time: 5.787633895874023
+time: 5.784931659698486
+no merge!
+time: 12.363622665405273
+time: 5.784860849380493
+time: 5.787096261978149
+time: 5.782752752304077
+no merge!
+time: 12.357036590576172
+time: 5.784505844116211
+time: 5.783324956893921
+time: 5.784273386001587
+no merge!
+time: 12.35346007347107
+time: 5.784158945083618
+time: 5.787938117980957
+time: 5.781949520111084
+no merge!
+time: 12.355934858322144
+time: 5.784235715866089
+time: 5.787696361541748
+time: 5.78446888923645
+no merge!
+time: 12.353078603744507
+time: 5.784618854522705
+time: 5.783883094787598
+time: 5.785850286483765
+no merge!
+time: 12.35226821899414
+time: 5.78379487991333
+time: 5.786376476287842
+time: 5.785376071929932
+no merge!
+time: 12.341951370239258
+time: 5.782843828201294
+time: 5.78761625289917
+time: 5.788396835327148
+no merge!
+time: 12.362173080444336
+time: 5.783991098403931
+time: 5.785085439682007
+time: 5.784229516983032
+no merge!
+time: 12.347420454025269
+time: 5.78975248336792
+time: 5.788338661193848
+390.07067489624023
+Demixing took: 584.9986908435822 sec
+Plot saved: super_pixels.png
+Traceback (most recent call last):
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/PIL/ImageFile.py", line 506, in _save
+    fh = fp.fileno()
+AttributeError: '_idat' object has no attribute 'fileno'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "main.py", line 268, in <module>
+    save_plot('NMF_Traces')
+  File "main.py", line 52, in save_plot
+    plt.savefig(PLOT_PATH + name + '.png')
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/matplotlib/pyplot.py", line 842, in savefig
+    res = fig.savefig(*args, **kwargs)
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/matplotlib/figure.py", line 2311, in savefig
+    self.canvas.print_figure(fname, **kwargs)
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/matplotlib/backend_bases.py", line 2217, in print_figure
+    **kwargs)
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/matplotlib/backend_bases.py", line 1639, in wrapper
+    return func(*args, **kwargs)
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/matplotlib/backends/backend_agg.py", line 512, in print_png
+    dpi=self.figure.dpi, metadata=metadata, pil_kwargs=pil_kwargs)
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/matplotlib/image.py", line 1591, in imsave
+    image.save(fname, **pil_kwargs)
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/PIL/Image.py", line 2158, in save
+    save_handler(self, fp, filename)
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/PIL/PngImagePlugin.py", line 1284, in _save
+    ImageFile._save(im, _idat(fp, chunk), [("zip", (0, 0) + im.size, 0, rawmode)])
+  File "/ems/elsc-labs/adam-y/rotem.ovadia/Programs/anaconda3/envs/invivo/lib/python3.6/site-packages/PIL/ImageFile.py", line 514, in _save
+    e.setimage(im.im, b)
+SystemError: tile cannot extend outside image
+Demixing stage done
