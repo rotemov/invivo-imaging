@@ -26,7 +26,7 @@ NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 
                      'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
                      'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
                      'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
-                     'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length']
+                     'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length', 'job_id']
 DIR_PARAMS_IDX = [1, 13, 36]
 MAX_NMF_ELEMENTS = 15
 FREQ_TO_HP_SPACING = 100
@@ -339,10 +339,14 @@ def main():
                                  enable_events=True, key='Other_plots_graph')
 
     other_plots = [
-        [sg.Text('Other plots')],
         [other_plots_graph],
         [sg.Button('Average'), sg.Button('Background Traces'), sg.Button('Intermediate Traces'),
          sg.Button('Temporal Correlations')]
+    ]
+
+    logs = [
+        [sg.Text("Job ID", size=LABEL_SIZE), sg.In(size=INPUT_SIZE, key='job_id', enable_events=True, default_text='1'), sg.Button("Load logs")],
+        [sg.Output(size=IM_SIZE, key="output_logs", value="")]
     ]
 
     # The TabgGroup layout - it must contain only Tabs
@@ -352,8 +356,10 @@ def main():
         sg.Tab('NMF Traces', nmf_traces, key='tab_nmf_traces'),
         sg.Tab('Super Pixels', super_pixels, key='tab_super_pixels'),
         sg.Tab('Final Traces', final_traces, key='tab_final_traces'),
-        sg.Tab('Other Plots', other_plots, key='tab_outputs'),
+
+        sg.Tab('Logs', logs, key='tab_logs')
     ]]
+    # sg.Tab('Other Plots', other_plots, key='tab_outputs'),
 
     # The window layout - defines the entire window
     layout = [
@@ -369,6 +375,7 @@ def main():
             break
         if event == 'Run':
             last_job = run_command(values)
+            print(last_job)
             window['last_job'].update("Last job ran: " + str(last_job))
         if event == 'Help':
             print("Link to github appeared")
@@ -392,7 +399,7 @@ def main():
             enable_nmf_checkboxes(nmf_trace_checkboxes, int(values['nmf_num_elements']))
         if event == 'Load params':
             load_params_from_file(window, values)
-            # event, values = window.read()
+
         for key in NUM_FIELD_KEYS:
             if event == key:
                 enforce_numbers(window, values, key)
