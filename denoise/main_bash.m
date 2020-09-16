@@ -1,18 +1,10 @@
-function [] = main_bash(data_dir, file_name)
+function [] = main_bash(home, file_name, output)
     % Initialization
 
     GUI = 0;
-    data_dir
-    file_name
+    harvard_cannon = 0;
     genpath(fullfile(cd,'..','lib'))
     addpath(genpath(fullfile(cd,'..','lib')));
-
-    harvard_cannon = 0;
-    % home = fullfile(cd, data_dir);
-    % home = fullfile(cd,'..','demo_data');
-    home = data_dir;
-
-    output = fullfile(home,'output');
     plots = fullfile(output, 'plots');
 
     if ~exist(output,'dir')
@@ -29,7 +21,6 @@ function [] = main_bash(data_dir, file_name)
 
     [fp,n,ext] = fileparts(file_name)
     if strcmp(ext,'.tif')
-
         mov = loadtiff(fullfile(home, file_name));
     elseif strcmp(ext,'.bin')
         [mov, nr, nc] = readBinMov4(home, n, 0);

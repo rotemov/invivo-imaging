@@ -102,7 +102,7 @@ echo "Starting denoising stage"
 cd denoise
 if [ $NORMCORRE == "1" ]; then
   echo "Starting registration"
-  /usr/local/bin/matlab -batch "main_bash('"$DATA"','"$FN"'); exit"
+  /usr/local/bin/matlab -batch "main_bash('"$DATA"','"$FN"','"$OUTPUT"'); exit"
   echo "Registration done"
 else
   echo "Skipping NormCoRRe"

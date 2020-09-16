@@ -33,6 +33,7 @@ FREQ_TO_HP_SPACING = 100
 LOAD_PARAMS_DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plots_graph', '-TABGROUP-',
                            '__len__', 'final_traces_graph', 'param_file_browser', 'input_file_browser',
                            'output_dir_browser', 'stim_dir_browser']
+SSH_LINE = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -184,15 +185,26 @@ def handle_called_process_error(msg):
     sg.Popup(msg + '\nPlease re-check parameters and password')
 
 
+def call_command_on_cluster(bash_command, password):
+    command = SSH_LINE.format(password, bash_command)
+    try:
+        output = subprocess.check_output(['ubuntu1804', 'run', command])
+        return output
+    except CalledProcessError as e:
+        raise CalledProcessError
+
+
 def run_command(values):
-    ssh_line = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
     args = get_args_array(values)
     running_line = " ".join([str(arg) for arg in args])
-    ssh_line = ssh_line.format(values['password'], running_line)
     try:
-        output = subprocess.check_output(['ubuntu1804', 'run', ssh_line])
+        output = call_command_on_cluster(running_line, values['password'])
         job_number = [int(s) for s in output.decode('utf-8').split() if s.isdigit()][0]
-        with open(args[1] + "/params_" + str(job_number) + '.pkl', 'wb') as f:
+        if values['network_drive_flag'] and os.path.isdir(values['output_dir']):
+            param_dir = values['output_dir']
+        else:
+            param_dir = '../params'
+        with open(param_dir + "/params_" + str(job_number) + '.pkl', 'wb') as f:
             values['password'] = ""
             values['last job'] = "Last job ran: " + str(job_number)
             pickle.dump(values, f)
@@ -237,15 +249,20 @@ def load_params_from_file(window, values):
 
 
 def print_logs(window, values):
-    ssh_line = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
     running_line = "cat /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/logs/II_" + values['logs_job_id'] + ".log"
-    ssh_line = ssh_line.format(values['password'], running_line)
+    command = SSH_LINE.format(values['password'], running_line)
     try:
-        output = subprocess.check_output(['ubuntu1804', 'run', ssh_line])
+        output = subprocess.check_output(['ubuntu1804', 'run', command])
         log_text = output.decode('utf-8')
         window['logs_mline'].update(log_text)
     except CalledProcessError:
-        handle_called_process_error("Log file didn't open")
+        handle_called_process_error("Log file didn't open. It may not have started yet.\n")
+
+
+def check_running_jobs(values):
+    running_line = "squeue --user=rotem.ovadia"
+    command = SSH_LINE.format(values['password'], running_line)
+
 
 
 def main():
