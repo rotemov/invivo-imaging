@@ -1,0 +1,1170 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 2cm
+\bottommargin 2cm
+\headheight 1cm
+\headsep 1cm
+\footskip 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation 0bp
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Neuro Science Summary
+\end_layout
+
+\begin_layout Author
+Rotem Ovadia - rotem.ovadia@mail.huji.ac.il - +972-50-288-5744
+\end_layout
+
+\begin_layout Abstract
+This is a short summary of the relevant papers and techniques.
+\end_layout
+
+\begin_layout Section
+Pipeline Paper
+\end_layout
+
+\begin_layout Standard
+PCA-ICA fails sub-threshold signals because they are not independent.
+ It works on spikes because they are independent.
+\end_layout
+
+\begin_layout Standard
+PMD-NMF a pipeline for accounting for fluctuating backgrounds.
+\end_layout
+
+\begin_layout Standard
+SGPMD-NMF a new pipeline that relies on spikes to achieve the spatial placement
+ of the cells.
+ Using that we proceed doing sub-threshold imaging.
+ A cell that did not spike will not be detected.
+\end_layout
+
+\begin_layout Standard
+We also optimize background focus in order to identify low frequency signal
+ and background even when they are in the same place and even correlated.
+\end_layout
+
+\begin_layout Subsection
+SGPMD-NMF
+\end_layout
+
+\begin_layout Paragraph
+Denoising
+\end_layout
+
+\begin_layout Standard
+First the images are aligned in the x-y plane according to a reference frame
+ (done using NoRMCorre).
+ This part failed to correct minor z-plane changes (which affected focus).
+ Did not correct for relative motion of sample and spatially structured
+ fluorescence excitation light.
+\end_layout
+
+\begin_layout Standard
+Photo-bleaching correction is done using a 3rd order spline-base detrending
+ fit.
+ The detrending interval is typically 5s and need to be small enough to
+ capture the fastest transients.
+\end_layout
+
+\begin_layout Standard
+Shot noise reduction is done by PMD and assumes the noise is uncorrelated
+ between pixels (unlike voltage signals).
+ The technique is applied to a constant amount of frames and used as a filter
+ for bins of frames to keep run time low and constant.
+\end_layout
+
+\begin_layout Standard
+Structured illumination can improve SNR in stationary samples by minimizing
+ out of focus fluorescence.
+\end_layout
+
+\begin_layout Standard
+Generalized linear model to project motion correlated signals out of each
+ pixel.
+\end_layout
+
+\begin_layout Standard
+Manual blood flow removal.
+\end_layout
+
+\begin_layout Paragraph
+Demixing
+\end_layout
+
+\begin_layout Standard
+Separating individual neurons and background spatial components.
+\end_layout
+
+\begin_layout Standard
+First we spatially identify by looking for spikes (a 2x2 bin is applied
+ to reduce run time).
+ Apply a temporal high-pass filter (cutoff 10ms) which removed the low frequency
+ sub-threshold signals ( would not work without PMD).
+\end_layout
+
+\begin_layout Standard
+We then apply localNMF to the movie to find the cells spatially.
+ PCA is applied to the 
+\emph on
+original movie 
+\emph default
+after denoising with analysis restricted to the output matrix of the NMF.
+ We assumed that the background contributions to each cell would be a linear
+ combination of the off-cell background dynamics.
+\end_layout
+
+\begin_layout Standard
+All backgrounds are set to zero and then fastHALS algorithm for finding
+ the best background and signal weights.
+\end_layout
+
+\begin_layout Section
+Nature Paper
+\end_layout
+
+\begin_layout Standard
+We suspect that the learning process (formation of sinaptic bonds) can be
+ observed in the sub-threshold voltages.
+\end_layout
+
+\begin_layout Subsection
+Illumination
+\end_layout
+
+\begin_layout Standard
+The methodology used in the lab is using an array which illuminates single
+ cells specifically (pattern illumination) with a one photon microscope
+ using a screening array.
+ This allows us to use a one photon wide field approach with out frying
+ the brain.
+ 
+\end_layout
+
+\begin_layout Standard
+The cells them selves are luminated with a dark infrared around 
+\begin_inset Formula $640\mu m$
+\end_inset
+
+ and 
+\begin_inset Formula $mW$
+\end_inset
+
+ scale power and the returned spectrum is a higher infrared 
+\begin_inset Formula $660-740\mu m$
+\end_inset
+
+.
+ The indicator is distributed sparesly in order to decrease the chance of
+ cell overlap and high background.
+\end_layout
+
+\begin_layout Standard
+In addition they are also illuminated with a 
+\begin_inset Formula $10^{-3}$
+\end_inset
+
+less powerful blue wave length 
+\begin_inset Formula $488\mu m$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+Other Papers
+\end_layout
+
+\begin_layout Subsection
+PCA-ICA on calcium imaging
+\end_layout
+
+\begin_layout Standard
+Shows skewness is a good discriminator of signal and background.
+\end_layout
+
+\begin_layout Standard
+Applying PCA for dimension reduction and then ICA temporally and spacially
+ to distinguish signal from background.
+\end_layout
+
+\begin_layout Standard
+Failed to separate overlapping cells, suffers greatly from crosstalk.
+\end_layout
+
+\begin_layout Subsection
+CNMF - Liam Paninski 2016
+\end_layout
+
+\begin_layout Standard
+Shows superiority of the CNMF method for spatial footprints.
+\end_layout
+
+\begin_layout Subsection
+CMNF - Liam Paninski 2019
+\end_layout
+
+\begin_layout Standard
+The main idea is to perform deconstruction of the data into 
+\begin_inset Formula $4$
+\end_inset
+
+ matrices: 
+\begin_inset Formula $Y=AC+B+E$
+\end_inset
+
+ such that 
+\begin_inset Formula $AC$
+\end_inset
+
+ is the main signal, 
+\begin_inset Formula $B$
+\end_inset
+
+ is a term that accounts for signals that can't be attributed to a specific
+ source and 
+\begin_inset Formula $E$
+\end_inset
+
+ is the noise.
+ Denote 
+\begin_inset Formula $Y^{*}=AC+B$
+\end_inset
+
+ as our signal.
+ The approach suggested is find 
+\begin_inset Formula $Y^{*}=UV$
+\end_inset
+
+ where 
+\begin_inset Formula $U,V$
+\end_inset
+
+ are two matrices without constraints (not unitary like the previous approach).
+ Then we deconstruct 
+\begin_inset Formula $Y^{*}$
+\end_inset
+
+ into 
+\begin_inset Formula $A,B,C$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Paragraph
+Denoising and Compression
+\end_layout
+
+\begin_layout Standard
+Finding 
+\begin_inset Formula $U,V$
+\end_inset
+
+ kills two birds with one stone.
+ First it removes the noise 
+\begin_inset Formula $E$
+\end_inset
+
+ and second it is much more compressed version of the data.
+ Working under the following assumptions:
+\end_layout
+
+\begin_layout Enumerate
+Signal sources are spatially local.
+\end_layout
+
+\begin_layout Enumerate
+Signal is correlated spatially and temporally where noise is uncorrelated
+ (random).
+\end_layout
+
+\begin_layout Enumerate
+Signal is low rank.
+\end_layout
+
+\begin_layout Standard
+This justifies using local PMD.
+ We cut the data into overlapping spacial patches and do PMD on each patch
+ (psuedocode in pg6-7).
+ We then combine the overlapping patches with a linear function that starts
+ at 0 at the boundary and becomes 1 in the center of the patch.
+ In the case of wide field approaches we might have spacially correlated
+ background signals and it is recommended to perform PMD several time on
+ the full Y before proceeding.
+\end_layout
+
+\begin_layout Standard
+Patchwise PMD scales linearly in:
+\end_layout
+
+\begin_layout Itemize
+T - the number of frames in the video
+\end_layout
+
+\begin_layout Itemize
+d - the number of pixels in each frame
+\end_layout
+
+\begin_layout Itemize
+k - the rank of U and V
+\end_layout
+
+\begin_layout Paragraph
+Demixing
+\end_layout
+
+\begin_layout Standard
+Initializing via superpixels relies on the assumption that signal pixels
+ will be highly spatially correlated whilst noise pixels will be much less
+ correlated, this gives us non overlapping patches of pixels that are likely
+ to be contained in the cells, we use the best ones in each of these patches
+ in order to initiate C, note that C contains the temporal changes in these
+ pixels aswell.
+\end_layout
+
+\begin_layout Subsection
+VolPy
+\end_layout
+
+\begin_layout Standard
+Voltage imaging data is much heavier and the CaImAn framework has some usefull
+ stuff for it.
+\end_layout
+
+\begin_layout Standard
+VolPy is fully integrated into CaImAn.
+\end_layout
+
+\begin_layout Standard
+Uses a NN.
+ Includes a test set of annotated movies to check on.
+ Correlation movie technique that uses the correlation image technique on
+ consecutive frames.
+\end_layout
+
+\begin_layout Standard
+Motion correction is done via NoRMCorre.
+\end_layout
+
+\begin_layout Standard
+Segmentation was done with MAsk R-CNN that bounds objects in boxes (like
+ YOLO), it also classifies the neuron type.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Spike extraction is via SpikePursuit algorithm (pg19).
+\end_layout
+
+\begin_layout Standard
+Memory mapping infrastructure?
+\end_layout
+
+\begin_layout Subsection
+Suite2p
+\end_layout
+
+\begin_layout Standard
+A good framework with good GUI.
+ Requires some user input at the ROI stage (done via ML and a human fixes
+ it).
+\end_layout
+
+\begin_layout Subsection
+CaImAn
+\end_layout
+
+\begin_layout Standard
+Works with calcium images.
+ Has a custom dataset that could be usefull.
+\end_layout
+
+\begin_layout Standard
+Supervised NNs don't do well with overlapping signals.
+\end_layout
+
+\begin_layout Subsection
+General
+\end_layout
+
+\begin_layout Subsubsection
+Motion Correction / Registration
+\end_layout
+
+\begin_layout Standard
+The concensus is NoRMCorre
+\end_layout
+
+\begin_layout Subsubsection
+Source Extraction Methods
+\end_layout
+
+\begin_layout Itemize
+Graph-cut approaches (unsupervised)
+\end_layout
+
+\begin_layout Itemize
+Dictionary learning (unsupervised)
+\end_layout
+
+\begin_layout Itemize
+Deep NNs (supervised)
+\end_layout
+
+\begin_layout Itemize
+PCA-ICA
+\end_layout
+
+\begin_layout Section
+Dictionary
+\end_layout
+
+\begin_layout Itemize
+Activity trace - the temporal voltage plot
+\end_layout
+
+\begin_layout Itemize
+in vivo - in a living being
+\end_layout
+
+\begin_layout Itemize
+in vitro - in a glass slide (non living)
+\end_layout
+
+\begin_layout Itemize
+Placers - cells that light up when in a certain place
+\end_layout
+
+\begin_layout Itemize
+SNR - signal to noise ratio
+\end_layout
+
+\begin_layout Itemize
+GEVI - Genetically encoded voltage indicator, translates voltage into light
+\end_layout
+
+\begin_layout Itemize
+FOV - field of view, a way to say high pixel video
+\end_layout
+
+\begin_layout Itemize
+NMF - non negative matrix factorization
+\end_layout
+
+\begin_layout Itemize
+Off cell background dynamics - breathing, out of focus, residual motion
+\end_layout
+
+\begin_layout Itemize
+Patch clamp - studying ionic currents in individual cells / membranes /
+ tissues.
+\end_layout
+
+\begin_layout Itemize
+Structured illumination - using a known pattern of light on a sample (Moire
+ patterns using interference).
+ The input is convolved to a achieve a higher resolution image.
+\end_layout
+
+\begin_layout Itemize
+Optical sectioning - the ability to look only at a certain focal plane (i.e.
+ making only light from the 3rd layer of cells in a membrane to reach the
+ detector).
+\end_layout
+
+\begin_layout Itemize
+Quantum yield - efficiency of excitation, how much Watts do we need to excite
+ a cell X times.
+\end_layout
+
+\begin_layout Itemize
+Wide field - illumination of an area.
+\end_layout
+
+\begin_layout Itemize
+ROI - region of interest.
+\end_layout
+
+\begin_layout Itemize
+1PEF - excitation is done with a single photon, usually creates higher energy
+ usage and does not have optical sectioning.
+\end_layout
+
+\begin_layout Itemize
+2PEF - 2 photon excitation microscopy.
+ We send two photons with roughly half the energy needed to excite the fluorphor
+e.
+ In result the fluorphore emits a photon of higher energy than the two incoming
+ ones.
+ Since absorption of two photons is pretty rare a high flux of photons is
+ needed in order to achieve high real time resolutions.
+ Some other advantages include these microscopes emitting less energy into
+ the membrane than 1 photon microscopes with longer wavelengths which cause
+ less damage.The image is formed by scanning all the regions in an image
+ (each measurement gives a pixel).
+\end_layout
+
+\begin_layout Itemize
+Confocal microscope - uses an apparatus of mirrors and pinholes in order
+ to scan a 
+\emph on
+specific
+\emph default
+ plane (bkg is out of focus).
+ Several scans can be used in order to achieve 3d imaging in high resolution.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset href
+LatexCommand href
+name "Really good video on fluorescence microscopy "
+target "https://en.wikipedia.org/wiki/Confocal_microscopy"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Point spread function - the image of a single point light source (delta
+ function) in the system.
+\end_layout
+
+\begin_layout Itemize
+Skewness - 
+\begin_inset Formula $\tilde{\mu}=E\left[\left(\frac{X-\mu}{\sigma}\right)^{3}\right]$
+\end_inset
+
+ describes where the tail of a unimodal distribution is (positive means
+ tail is on the right, negative on the left).
+ 
+\end_layout
+
+\begin_layout Itemize
+Crosstalk - the phenomenon of a signal transmitted into one circuit affect
+ another circuit due to undesired capicitance, inductance or conductive
+ coupling.
+\end_layout
+
+\begin_layout Itemize
+Fidelity - precision
+\end_layout
+
+\begin_layout Itemize
+Z-stacking - using 2d images each focused in a different plane and stacking
+ them to create a 3D image.
+\end_layout
+
+\begin_layout Itemize
+NMF - non-negative matrix factorization.
+ 
+\begin_inset Formula $V=WH$
+\end_inset
+
+ such that 
+\begin_inset Formula $V$
+\end_inset
+
+ is our signal and 
+\begin_inset Formula $W,H$
+\end_inset
+
+ are the decomposition of it into two matrices.
+ This is only numerically solvable and it allows for significant dimension
+ reduction.
+ Two ways: we impose 
+\begin_inset Formula $HH^{T}=I$
+\end_inset
+
+ and then minimize 
+\begin_inset Formula $\left|V-WH\right|$
+\end_inset
+
+ which is the same as doing K-means clustering, we use the KLD error.
+ Relies heavily on initialization, and crops a nice portion of the signal.
+\end_layout
+
+\begin_layout Itemize
+SVD - Single value decomposition, kind of like eigen value decomposition
+ but for non square matrices.
+\end_layout
+
+\begin_layout Itemize
+SPA - sparse projection algorithm
+\end_layout
+
+\begin_layout Itemize
+Hypocampus layers - CA1, CA2, CA 3, DG, Oriens (
+\begin_inset Formula $20-60\mu m$
+\end_inset
+
+ depth), PCL (up to 
+\begin_inset Formula $130\mu m$
+\end_inset
+
+ depth)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Summary/pasted1.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Neuron structure
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Pipeline
+\end_layout
+
+\begin_layout Subsection
+Installation
+\end_layout
+
+\begin_layout Enumerate
+Install Ubuntu 18.04 (
+\begin_inset Quotes eld
+\end_inset
+
+Bionic Beaver
+\begin_inset Quotes erd
+\end_inset
+
+) using this 
+\begin_inset CommandInset href
+LatexCommand href
+name "guide"
+target "https://itsfoss.com/install-ubuntu-1404-dual-boot-mode-windows-8-81-uefi/"
+literal "false"
+
+\end_inset
+
+ (follow the steps for the partition or it will mess up your PC)
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+In order to start up from the USB you need to press Shift continuously while
+ restarting and select UEFI options.
+\end_layout
+
+\begin_layout Enumerate
+After installation in order to boot from Ubuntu you choose Ubuntu and for
+ windows choose Windows.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Install Intel Parallel Studios XE
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Sign up with a student license and download offline version + get offline
+ license file 
+\bar under
+from a non university network
+\bar default
+, for some reason this won't work from HUJI computers!
+\end_layout
+
+\begin_layout Enumerate
+Use the elaborate intel tutorials to install the program locally.
+\end_layout
+
+\begin_layout Enumerate
+Run the command in the terminal: source <path to intel>/parallel_studio_xe_<year.
+version>/bin/psxevars.sh
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Install Anaconda using this 
+\begin_inset CommandInset href
+LatexCommand href
+name "guide"
+target "https://docs.anaconda.com/anaconda/install/linux/"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Step 9 is optional and will only be usefull if you intend to develop in
+ python on this machine (ofcourse other code environments can also be used,
+ however jupyter notebook will not suffice on it's own)
+\end_layout
+
+\begin_layout Enumerate
+Don't skip step 7 running conda init is super important
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Install gcc and g++ by running:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+sudo apt update
+\end_layout
+
+\begin_layout Enumerate
+sudo apt install g++
+\end_layout
+
+\begin_layout Enumerate
+sudo apt install gcc
+\end_layout
+
+\begin_layout Enumerate
+sudo apt install gfortran
+\end_layout
+
+\begin_layout Enumerate
+sudo apt-get install libopenblas-base
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Any dependency issues should be googled and usually it can be solved with
+ a simple installation sudo apt install <missing package>
+\end_layout
+
+\begin_layout Enumerate
+Now we can move on to the installation 
+\begin_inset CommandInset href
+LatexCommand href
+name "tutorial"
+target "https://docs.google.com/document/d/1eslBAdL2mbWl-t1j5l3DLsfWzSI6EdrhOD6RENW50c4/edit"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+While (invivo) is the prefix do:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+conda install h5py
+\end_layout
+
+\begin_layout Enumerate
+conda install mkl-devel
+\end_layout
+
+\begin_layout Enumerate
+Maybe need to install dlib using this 
+\begin_inset CommandInset href
+LatexCommand href
+name "tutorial"
+target "https://gist.github.com/smitshilu/7b21016c496e412a966a34045a8c21ff"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Don't skip installing apt dependencies that appear in the docker file
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+swap preprocess.py in trefide with michaels version
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Enumerate
+Mounting the drive
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+sudo mount -t cifs -o user=rotem.ovadia //ems.elsc.huji.ac.il/adam-lab mnt/adam-lab/
+\end_layout
+
+\begin_layout Enumerate
+Editing /etc/fstab by adding
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+//ems.elsc.huji.ac.il/adam-lab /home/rotemov/mnt/adam-lab cifs credentials=/home/rot
+emov/.smbcredentials 0 0
+\end_layout
+
+\begin_layout Enumerate
+Making a credential file in home dir (first row username=****, second row
+ password=****)
+\end_layout
+
+\begin_layout Enumerate
+run mount -a from terminal
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Enumerate
+Running MATLAB from CLI
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+matlab -batch 
+\begin_inset Quotes eld
+\end_inset
+
+filename
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Updating:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+cd into the cloned dir
+\end_layout
+
+\begin_layout Enumerate
+git fetch
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Questions to Michael
+\end_layout
+
+\begin_layout Enumerate
+Can you explain the general flow of the program?
+\end_layout
+
+\begin_layout Enumerate
+In detrend.py how do I work arround the empty list issue - use michaels preprocce
+ssing.py
+\end_layout
+
+\begin_layout Enumerate
+In denoising how do I work arround the series of terminal commands
+\end_layout
+
+\begin_layout Enumerate
+How do I skip bloodflow removal
+\end_layout
+
+\begin_layout Enumerate
+bg selection?
+\end_layout
+
+\begin_layout Enumerate
+Load trend issue
+\end_layout
+
+\begin_layout Enumerate
+Do we need to denoise on the whole movie or is a small portion enough?
+\end_layout
+
+\begin_layout Subsubsection
+First meeting (August 10th) answers
+\end_layout
+
+\begin_layout Standard
+Denoising no need to play with parameters.
+\end_layout
+
+\begin_layout Standard
+spacing - constant
+\end_layout
+
+\begin_layout Standard
+blocks and column blocks - size of one cell
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Demixing - cuttoff point - whats the correlation threshold for two cells
+ to be considered as one unit, tune so that the initialization
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+sup only to True in notebook in order to tune cuttoff point
+\end_layout
+
+\begin_layout Standard
+length_min/max - in order to make sure small/big stuff is not turned into
+ a cell
+\end_layout
+
+\begin_layout Standard
+residual cut - if two superpixels are correlated more than this than one
+ of them is overlapping part of two cells
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+corr_th_fix - the higher it is the smaller the footprint the lower it is
+ the bigger
+\end_layout
+
+\begin_layout Standard
+look at super pixels
+\end_layout
+
+\begin_layout Standard
+rank of the bkg - what dimensionally I think it has 3-6 work well
+\end_layout
+
+\begin_layout Standard
+number of cells is between 2-7
+\end_layout
+
+\begin_layout Standard
+For RAM optimization - run the whole thing on 5k first frames and then re
+ run get final traces with X2 from previous run and Y whole movie (one of
+ the last boxes in the code)
+\end_layout
+
+\begin_layout Section
+Questions
+\end_layout
+
+\begin_layout Enumerate
+Are patch clamp recordings considered the ground truth, or does crosstalk
+ make it just as inaccurate?
+\end_layout
+
+\begin_layout Enumerate
+With regards to the results in the nature paper.
+\end_layout
+
+\begin_layout Enumerate
+Does the temporal high pass filter make this 
+\begin_inset Quotes eld
+\end_inset
+
+spike guided
+\begin_inset Quotes erd
+\end_inset
+
+?
+\end_layout
+
+\begin_layout Enumerate
+How do you achieve such deep measurements with 1 photon microscopy?
+\end_layout
+
+\begin_layout Enumerate
+The temporal trace estimate is simply the least square error regression
+ on the (denoised motion corrected) ROI?
+\end_layout
+
+\begin_layout Enumerate
+What is the skewness threshold for subthreshold components?
+\end_layout
+
+\begin_layout Enumerate
+
+\bar under
+How is the trace calculated from a neuron? simply linear regression after
+ we have the footprints (superpixels)
+\end_layout
+
+\begin_layout Enumerate
+How modular is the code at the moment? (if we want to change components
+ in the future)
+\end_layout
+
+\begin_layout Enumerate
+What are some good GUI frameworks I should mimic?
+\end_layout
+
+\begin_layout Section
+TODO
+\end_layout
+
+\begin_layout Enumerate
+PMD (and it's variants).
+\end_layout
+
+\begin_layout Enumerate
+temporal high pass filter
+\end_layout
+
+\begin_layout Enumerate
+lag-1 correlations (Statistical Methods of rationale)
+\end_layout
+
+\begin_layout Enumerate
+linear regression - simply fitting linearly, components can be 
+\begin_inset Formula $x^{2}$
+\end_inset
+
+ for example but the method is still called linear regression as it looks
+ at a linear combination of the components given to it.
+\end_layout
+
+\begin_layout Enumerate
+detrending
+\end_layout
+
+\begin_layout Enumerate
+Markov Chain Monte Carlo
+\end_layout
+
+\begin_layout Enumerate
+Poisson proccess
+\end_layout
+
+\begin_layout Enumerate
+MAD
+\end_layout
+
+\begin_layout Enumerate
+The Hungarian Algorithm
+\end_layout
+
+\begin_layout Section
+Some needed improvements
+\end_layout
+
+\begin_layout Standard
+Make it usable via docker
+\end_layout
+
+\begin_layout Standard
+Need to add parrallel computing toolbox, image processing toolbox to dependencie
+s in matlab
+\end_layout
+
+\begin_layout Standard
+Need to make a script that runs it all sequentially
+\end_layout
+
+\end_body
+\end_document
