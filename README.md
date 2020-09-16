@@ -67,4 +67,4 @@ Feel free to open issues in the designated area in this page or to contact me di
 
 2. Demixing will require some iterations. Start with the default parameters and see which cells the algorithm detects.
 
-(To be continued)
+    (To be continued)
