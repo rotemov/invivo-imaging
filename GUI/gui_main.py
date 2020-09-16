@@ -15,6 +15,7 @@ import re
 
 VERSION = 0.1
 IM_SIZE = (800, 600)
+POPUP_SIZE = (200, 400)
 sg.theme('Reddit')
 CHECK_BOX_SIZE = (25, 1)
 INPUT_SIZE = (10, 1)
@@ -23,10 +24,11 @@ SLIDER_SIZE = (34, 20)
 NUM_PARAMS = 37
 DATETIME_FORMAT = "%d%m%Y_%H%M%S"
 NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 'max_size',
-                     'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
-                     'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
-                     'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
-                     'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length', 'job_id']
+                  'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
+                  'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
+                  'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
+                  'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length', 'job_id',
+                  'job_to_cancel']
 DIR_PARAMS_IDX = [1, 13, 36]
 MAX_NMF_ELEMENTS = 15
 FREQ_TO_HP_SPACING = 100
@@ -167,7 +169,7 @@ def get_args_array(values):
     args[31] = values['demix_start']
     args[32] = values['demix_length']
     args[33] = values['demix_all_frame_flag']
-    args[34] = int(int(values['sample_freq'])/FREQ_TO_HP_SPACING)
+    args[34] = int(int(values['sample_freq']) / FREQ_TO_HP_SPACING)
     args[35] = parse_nmf_checkboxes(values)
     args[36] = values['stim_dir']
 
@@ -189,17 +191,16 @@ def call_command_on_cluster(bash_command, password):
     command = SSH_LINE.format(password, bash_command)
     try:
         output = subprocess.check_output(['ubuntu1804', 'run', command])
-        return output
+        return output.decode('utf-8')
     except CalledProcessError as e:
-        raise CalledProcessError
+        raise e
 
 
 def run_command(values):
-    args = get_args_array(values)
-    running_line = " ".join([str(arg) for arg in args])
+    running_line = " ".join([str(arg) for arg in get_args_array(values)])
     try:
         output = call_command_on_cluster(running_line, values['password'])
-        job_number = [int(s) for s in output.decode('utf-8').split() if s.isdigit()][0]
+        job_number = [int(s) for s in output.split() if s.isdigit()][0]
         if values['network_drive_flag'] and os.path.isdir(values['output_dir']):
             param_dir = values['output_dir']
         else:
@@ -216,9 +217,9 @@ def run_command(values):
 
 def get_nmf_trace_checkboxes(num_elements):
     cbs = [None] * num_elements
-    cbs[0] = sg.Checkbox(str(0), default=True, key='nmf_flag_'+str(0), disabled=False, visible=True)
+    cbs[0] = sg.Checkbox(str(0), default=True, key='nmf_flag_' + str(0), disabled=False, visible=True)
     for i in range(1, num_elements):
-        cbs[i] = sg.Checkbox(str(i), default=False, key='nmf_flag_'+str(i), disabled=True, visible=True)
+        cbs[i] = sg.Checkbox(str(i), default=False, key='nmf_flag_' + str(i), disabled=True, visible=True)
     return cbs
 
 
@@ -232,7 +233,7 @@ def enable_nmf_checkboxes(cbs, num_elements):
 def parse_nmf_checkboxes(values):
     cells = ""
     for i in range(int(values['nmf_num_elements'])):
-        if values['nmf_flag_'+str(i)]:
+        if values['nmf_flag_' + str(i)]:
             cells += str(i)
     return cells
 
@@ -249,25 +250,37 @@ def load_params_from_file(window, values):
 
 
 def print_logs(window, values):
-    running_line = "cat /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/logs/II_" + values['logs_job_id'] + ".log"
-    command = SSH_LINE.format(values['password'], running_line)
+    running_line = "cat /ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/logs/II_" + values[
+        'logs_job_id'] + ".log"
     try:
-        output = subprocess.check_output(['ubuntu1804', 'run', command])
-        log_text = output.decode('utf-8')
+        log_text = call_command_on_cluster(running_line, values['password'])
         window['logs_mline'].update(log_text)
     except CalledProcessError:
-        handle_called_process_error("Log file didn't open. It may not have started yet.\n")
+        handle_called_process_error("Log file didn't open.\nIt may not have started yet.")
 
 
 def check_running_jobs(values):
-    running_line = "squeue --user=rotem.ovadia"
-    command = SSH_LINE.format(values['password'], running_line)
+    running_line = "/opt/slurm/bin/squeue --me --Format=JobID,State,TimeUsed"
+    try:
+        output = call_command_on_cluster(running_line, values['password'])
+        sg.Popup("Check if your job is in this list:\n" + output)
+    except CalledProcessError:
+        handle_called_process_error("Couldn't check jobs.")
 
+
+def cancel_job(values):
+    running_line = "/opt/slurm/bin/scancel " + values['job_to_cancel']
+    try:
+        output = call_command_on_cluster(running_line, values['password'])
+        sg.Popup("Please validate job was canceled by checking the running jobs.")
+    except CalledProcessError:
+        handle_called_process_error("Couldn't cancel job.")
 
 
 def main():
     main_runner = [
-        [sg.Text('Param file:', size=LABEL_SIZE), sg.InputText(key='param_file'), sg.FileBrowse(key='param_file_browser'), sg.Button('Load params')],
+        [sg.Text('Param file:', size=LABEL_SIZE), sg.InputText(key='param_file'),
+         sg.FileBrowse(key='param_file_browser'), sg.Button('Load params')],
         [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file',
                                                                default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/Sq_camera.bin'),
          sg.FileBrowse(key='input_file_browser')],
@@ -298,7 +311,9 @@ def main():
          sg.In(default_text='30', size=INPUT_SIZE, key='patch_size_edge', enable_events=True)],
         [sg.Text('Sample frequency[Hz]', size=LABEL_SIZE),
          sg.In(default_text='1000', size=INPUT_SIZE, key='sample_freq', enable_events=True)],
-        [sg.Text('Last job ran: ', size=LABEL_SIZE, key="last_job")]
+        [sg.Text('Last job started: ', size=LABEL_SIZE, key="last_job")],
+        [sg.Text('Choose a job to cancel: ', size=LABEL_SIZE),
+         sg.In(size=INPUT_SIZE, key="job_to_cancel", default_text=""), sg.Button("Cancel job")]
     ]
 
     advanced_params = [
@@ -332,7 +347,8 @@ def main():
         [sg.Text('BGR max iterations', size=LABEL_SIZE),
          sg.In(default_text='1000', size=INPUT_SIZE, key='bg_reg_max_iter', enable_events=True)],
         [sg.Text('Registered movie name', size=LABEL_SIZE), sg.InputText(key='mov_in', default_text='movReg.tif')],
-        [sg.Text('Stimulation dir: ', size=LABEL_SIZE), sg.InputText(key='stim_dir'), sg.FolderBrowse(key='stim_dir_browser')],
+        [sg.Text('Stimulation dir: ', size=LABEL_SIZE), sg.InputText(key='stim_dir'),
+         sg.FolderBrowse(key='stim_dir_browser')],
         [sg.Checkbox('Background mask', size=CHECK_BOX_SIZE, default=False, key="bg_mask")],
         [sg.Text('Min cell area (pix)', size=LABEL_SIZE),
          sg.In(default_text='10', size=INPUT_SIZE, key='min_size', enable_events=True),
@@ -348,7 +364,8 @@ def main():
         [sg.Text('Choose the ones that look like cells:')],
         [nmf_traces_graph],
         [sg.Text('# of elements', size=LABEL_SIZE),
-         sg.Slider(range=(1, MAX_NMF_ELEMENTS), orientation='h', size=SLIDER_SIZE, key='nmf_num_elements', default_value=1, enable_events=True)],
+         sg.Slider(range=(1, MAX_NMF_ELEMENTS), orientation='h', size=SLIDER_SIZE, key='nmf_num_elements',
+                   default_value=1, enable_events=True)],
         nmf_trace_checkboxes
     ]
 
@@ -382,7 +399,8 @@ def main():
         [sg.Multiline(size=(110, 30), font='courier 10', background_color='black', text_color='white',
                       key='logs_mline', auto_refresh=True, autoscroll=True)],
         [sg.T('Job ID:'), sg.Input(key='logs_job_id')],
-        [sg.Button('Load', key='logs_load', enable_events=True, bind_return_key=True), sg.Button('Clear', key='logs_clear', enable_events=True)]
+        [sg.Button('Load', key='logs_load', enable_events=True, bind_return_key=True),
+         sg.Button('Clear', key='logs_clear', enable_events=True)]
     ]
 
     # The TabgGroup layout - it must contain only Tabs
@@ -399,7 +417,8 @@ def main():
     # The window layout - defines the entire window
     layout = [
         [sg.TabGroup(tab_group_layout, enable_events=True, key='-TABGROUP-')],
-        [sg.Button('Run'), sg.Button('Help'), sg.Button('Load outputs'), sg.Button('Quit')]
+        [sg.Button('Run'), sg.Button('Help'), sg.Button('Load outputs'), sg.Button('Check running jobs'),
+         sg.Button('Quit')]
     ]
 
     window = sg.Window('Invivo imaging - Adam Lab - ver' + str(VERSION), layout, no_titlebar=False)
@@ -439,6 +458,10 @@ def main():
             print_logs(window, values)
         if event == 'Clear':
             window['logs_mline'].update("")
+        if event == 'Check running jobs':
+            check_running_jobs(values)
+        if event == 'Cancel job':
+            cancel_job(values)
 
         for key in NUM_FIELD_KEYS:
             if event == key:
