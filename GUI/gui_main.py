@@ -186,12 +186,13 @@ def handle_called_process_error(msg):
 
 def run_command(values):
     ssh_line = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
-    running_line = " ".join([str(arg) for arg in get_args_array(values)])
+    args = get_args_array(values)
+    running_line = " ".join([str(arg) for arg in args])
     ssh_line = ssh_line.format(values['password'], running_line)
     try:
         output = subprocess.check_output(['ubuntu1804', 'run', ssh_line])
         job_number = [int(s) for s in output.decode('utf-8').split() if s.isdigit()][0]
-        with open(values['output_dir'] + "/params_" + str(job_number) + '.pkl', 'wb') as f:
+        with open(args[1] + "/params_" + str(job_number) + '.pkl', 'wb') as f:
             values['password'] = ""
             values['last job'] = "Last job ran: " + str(job_number)
             pickle.dump(values, f)
@@ -362,9 +363,9 @@ def main():
 
     logs = [
         [sg.Multiline(size=(110, 30), font='courier 10', background_color='black', text_color='white',
-                      key='logs_mline')],
-        [sg.T('Job ID:'), sg.Input(key='logs_job_id', focus=True, do_not_clear=False)],
-        [sg.Button('Load', key='logs_load', enable_events=True), sg.Button('Clear', key='logs_clear', enable_events=True)]
+                      key='logs_mline', auto_refresh=True, autoscroll=True)],
+        [sg.T('Job ID:'), sg.Input(key='logs_job_id')],
+        [sg.Button('Load', key='logs_load', enable_events=True, bind_return_key=True), sg.Button('Clear', key='logs_clear', enable_events=True)]
     ]
 
     # The TabgGroup layout - it must contain only Tabs
