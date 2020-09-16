@@ -2,6 +2,8 @@
 
 Welcome to Yoav Adam's Lab @ HUJI - subversion of the invivo-imaging pipeline, for running the image processing pipeline on the ELSC cluster.
 
+The original pipeline was developed in the Cohen Lab @ Harvard https://github.com/adamcohenlab/invivo-imaging (click here for the original docs).
+
 Pipeline was tested on Ubuntu and Windows 10 machines connected to HUJI's network / using Samba VPN https://ca.huji.ac.il/vpn.
 
 Feel free to open issues in the designated area in this page or to contact me directly: rotem.ovadia@mail.huji.ac.il.
@@ -27,9 +29,9 @@ Feel free to open issues in the designated area in this page or to contact me di
 
     f. (Optional) Map the adam-lab network drive following this tutorial: https://support.microsoft.com/en-us/help/4026635/windows-map-a-network-drive (you will need to mail Nizar to get a user).
     
-2. Install Anaconda from https://www.anaconda.com/products/individual (preferably 64-bit).
+2. Install Anaconda from https://www.anaconda.com/products/individual (64-bit).
 
-3. Install python 3.6 from https://www.python.org/downloads/
+3. Install python 3.6 from https://www.python.org/downloads/ (64-bit).
 
 4.  a. Click Code --> Download ZIP (at the top of this page)
   
@@ -61,32 +63,8 @@ Feel free to open issues in the designated area in this page or to contact me di
 
 ## Parameter tuning
 
+1. In general the denoising steps (NoRMCoRRe, detrending and motion correction) will work well with the default parameters, if for some reason it fails choose a different parameter window (denoise start frame and number of frames).
 
+2. Demixing will require some iterations. Start with the default parameters and see which cells the algorithm detects.
 
-# Original Docs
-
-Spike-Guided Penalized Matrix Decomposition-Non-negative Matrix Factorization (SGPMD-NMF) pipeline code for in vivo voltage imaging
-
-1.	NoRMCorre correction of x-y motion
-2.	Photobleach correction with b-spline fit
-3.	PMD denoiser with parameters optimized on simulated data
-4.	From each pixel, regress out residual motion artifacts using NoRMCorre-estimated motion trajectories   
-5.	Manually crop blood vessels
-6.	localNMF demixing on temporally high-pass filtered movie to obtain spatial support of cells
-7.  fastHALS iterations on full unfiltered movie to calculate full spatial footprints of cells and background
-8.	Update spatial footprint of cells and background by ensuring smoothness of background spatial components around edges of cells
-9.	Apply the updated spatial and background footprints to calculate the temporal traces from the full denoised movie
-
-## Instructions for cluster install
-
-Instructions to run the pipeline here: http://bit.ly/sgpmdnmf-steps (Not comprehensive)
-
-Detailed instructions for setup on Harvard's Cannon cluster: http://bit.ly/harvard-sgpmdnmf-steps (Semi comprehensive)
-
-## Dependencies
-
-* [TREFIDE](http://github.com/ikinsella/trefide)
-
-## References
-
-[1] Xie, M., Adam, Y., Fan, L., Böhm, U., Kinsella, I., Zhou, D., Paninski, L., Cohen, A. High fidelity estimates of spikes and subthreshold waveforms from 1-photon voltage imaging in vivo. Submitted (2020)
+(To be continued)
