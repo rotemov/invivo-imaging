@@ -201,7 +201,6 @@ rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.
 print("Demixing took: " + str(time.time() - start) + " sec")
 
 # plot pure superpixels
-
 num_pass = len(rlt["superpixel_rlt"])
 
 scale = np.maximum(1, (
@@ -333,7 +332,7 @@ for cell_num in range(cell_ct):
     plt.subplot(cell_ct, 2, 2 * cell_num + 2)
     lower, upper = np.percentile(ref_im.flatten(), [1, 99])
     plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
-    cell_loc = a[:, cell_num].reshape(movB.shape[1], movB.shape[0])  # .transpose(1,0)
+    cell_loc = a[:, cell_num].reshape(movB.shape[1], movB.shape[0])
     cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
     plt.imshow(cell_loc, cmap='jet', alpha=0.5)
     plt.colorbar()
@@ -348,7 +347,7 @@ for bkgd_num in range(bg_rank):
     plt.subplot(bg_rank, 2, 2 * bkgd_num + 1)
     plt.plot(ff[:, bkgd_num])
 
-    bkgd_comp = fb[:, bkgd_num].reshape(movB.shape[1::-1])  # .transpose(1,0)
+    bkgd_comp = fb[:, bkgd_num].reshape(movB.shape[1::-1])
     plt.subplot(bg_rank, 2, 2 * bkgd_num + 2)
     plt.imshow(bkgd_comp)
     plt.colorbar()
@@ -471,7 +470,8 @@ if proc.lower() == 'y':
     io.imsave(PLOT_PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
     io.imsave(PLOT_PATH + '/residual_var' + suffix + '.tif', res)
     io.imsave(PLOT_PATH + '/ref_im' + suffix + '.tif', ref_im)
-
+    with open(PLOT_PATH + '/rlt' + suffix + '.tif', 'wb') as f:
+        pickle.dump(rlt, f)
     with open(PLOT_PATH + '/ref' + suffix + '.tif', 'wb') as f:
         pickle.dump([movB.shape[1::-1], ref_im], f)
 

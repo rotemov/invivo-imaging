@@ -36,6 +36,7 @@ LOAD_PARAMS_DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plot
                            '__len__', 'final_traces_graph', 'param_file_browser', 'input_file_browser',
                            'output_dir_browser', 'stim_dir_browser']
 SSH_LINE = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
+PLOT_FAIL_POPUP = "The job might be still running.\nPlease check output directory and running jobs."
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -73,7 +74,7 @@ def load_picture_on_canvas(values, graph, im_name):
         graph.draw_image(data=im_bin, location=(0, IM_SIZE[1]))
         print(im_name + " loaded")
     else:
-        print("Still running")
+        sg.Popup(PLOT_FAIL_POPUP)
 
 
 def open_traces_plot(values, voltage_file, footprint_file, ref_file):
@@ -114,7 +115,83 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
         plt.show()
         print(voltage_file + " plotted")
     else:
-        print("Still running")
+        sg.Popup(PLOT_FAIL_POPUP)
+
+
+def plot_super_pixels(values, rlt_file, ref_file):
+    ref_full = os.path.join(values['output_dir'], ref_file)
+    rlt_full = os.path.join(values['output_dir'], rlt_file)
+    if os.path.exists(ref_full) and os.path.exists(rlt_full):
+        with open(ref_full, 'rb') as f:
+            mov_dims, ref_im = pickle.load(f)
+        with open(rlt_full, 'rb') as f:
+            rlt = pickle.load(f)
+        num_pass = len(rlt["superpixel_rlt"])
+        scale = np.maximum(1, (
+                rlt["superpixel_rlt"][0]["connect_mat_1"].shape[1] / rlt["superpixel_rlt"][0]["connect_mat_1"].shape[0]))
+        plt.figure(figsize=(10 * scale * num_pass, 10))
+
+        plt.subplot(1, num_pass + 2, 1)
+        plt.imshow(ref_im.transpose(1, 0))
+        for p in range(num_pass):
+            connect_mat_1 = rlt["superpixel_rlt"][p]["connect_mat_1"]
+            pure_pix = rlt["superpixel_rlt"][p]["pure_pix"]
+            brightness_rank = rlt["superpixel_rlt"][p]["brightness_rank"]
+            ax1 = plt.subplot(1, num_pass + 2, p + 2)
+            dims = connect_mat_1.shape
+            connect_mat_1_pure = connect_mat_1.copy()
+            connect_mat_1_pure = connect_mat_1_pure.reshape(np.prod(dims), order="F")
+            connect_mat_1_pure[~np.in1d(connect_mat_1_pure, pure_pix)] = 0
+            connect_mat_1_pure = connect_mat_1_pure.reshape(dims, order="F")
+
+            ax1.imshow(connect_mat_1_pure, cmap="nipy_spectral_r")
+
+            for ii in range(len(pure_pix)):
+                pos = np.where(connect_mat_1_pure[:, :] == pure_pix[ii])
+                pos0 = pos[0]
+                pos1 = pos[1]
+                """ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
+                         verticalalignment='bottom', horizontalalignment='right', color='black',
+                         fontsize=15)"""
+                ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
+                         f"{brightness_rank[ii] + 1}",
+                         verticalalignment='bottom', horizontalalignment='right', color='black',
+                         fontsize=15)
+
+            ax1.set(title="pass " + str(p + 1))
+            ax1.title.set_fontsize(15)
+            ax1.title.set_fontweight("bold")
+        plt.show()
+    else:
+        sg.Popup(PLOT_FAIL_POPUP)
+
+
+def plot_NMF_traces(values, rlt_file, ref_file):
+    ref_full = os.path.join(values['output_dir'], ref_file)
+    rlt_full = os.path.join(values['output_dir'], rlt_file)
+    if os.path.exists(ref_full) and os.path.exists(rlt_full):
+        with open(ref_full, 'rb') as f:
+            mov_dims, ref_im = pickle.load(f)
+        with open(rlt_full, 'rb') as f:
+            rlt = pickle.load(f)
+        cell_ct = rlt["fin_rlt"]["c"].shape[1]
+        plt.figure(figsize=(25, 3 * cell_ct))
+        for cell_num in range(cell_ct):
+            plt.subplot(cell_ct, 2, 2 * cell_num + 1)
+            plt.plot(rlt["fin_rlt"]["c"][:, cell_num])
+            plt.title(cell_num, size=24)
+
+            plt.subplot(cell_ct, 2, 2 * cell_num + 2)
+            lower, upper = np.percentile(ref_im.flatten(), [1, 99])
+            plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
+
+            cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[1], mov_dims[0])  # .transpose(1,0)
+            cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
+            print("Cell #" + str(cell_num) + " loc: " + str(cell_loc))
+            plt.imshow(cell_loc, cmap='jet', alpha=0.5)
+        plt.show()
+    else:
+        sg.Popup(PLOT_FAIL_POPUP)
 
 
 def enforce_numbers(window, values, key):
@@ -206,7 +283,8 @@ def run_command(values):
         else:
             param_dir = '../params'
         with open(param_dir + "/params_" + str(job_number) + '.pkl', 'wb') as f:
-            values['password'] = ""
+            if 'password' in values:
+                del values['password']
             values['last job'] = "Last job ran: " + str(job_number)
             pickle.dump(values, f)
     except CalledProcessError:
@@ -363,6 +441,7 @@ def main():
     nmf_traces = [
         [sg.Text('Choose the ones that look like cells:')],
         [nmf_traces_graph],
+        [sg.Button('Open zoomable plot', key='NMF_traces_zoom')],
         [sg.Text('# of elements', size=LABEL_SIZE),
          sg.Slider(range=(1, MAX_NMF_ELEMENTS), orientation='h', size=SLIDER_SIZE, key='nmf_num_elements',
                    default_value=1, enable_events=True)],
@@ -374,7 +453,8 @@ def main():
 
     super_pixels = [
         [sg.Text('Make sure the super pixels look like the cells or the background')],
-        [super_pixels_graph]
+        [super_pixels_graph],
+        [sg.Button('Open zoomable plot', key='super_pixels_zoom')]
     ]
 
     final_traces_graph = sg.Graph(canvas_size=IM_SIZE, graph_bottom_left=(0, 0), graph_top_right=IM_SIZE,
@@ -383,7 +463,7 @@ def main():
     final_traces = [
         [sg.Text('These are the final traces:')],
         [final_traces_graph],
-        [sg.Button('Open zoomable plot')]
+        [sg.Button('Open zoomable plot', key='final_traces_zoom')]
     ]
 
     other_plots_graph = sg.Graph(canvas_size=IM_SIZE, graph_bottom_left=(0, 0), graph_top_right=IM_SIZE,
@@ -448,8 +528,12 @@ def main():
             load_picture_on_canvas(values, other_plots_graph, 'BG_Traces.png')
         if event == 'Temporal Correlations':
             load_picture_on_canvas(values, other_plots_graph, 'Temporal_Correlations.png')
-        if event == 'Open zoomable plot':
+        if event == 'final_traces_zoom':
             open_traces_plot(values, 'temporal_traces.tif', 'spatial_footprints.tif', 'ref.tif')
+        if event == 'NMF_traces_zoom':
+            plot_NMF_traces(values, 'rlt.tif', 'ref.tif')
+        if event == 'super_pixels_zoom':
+            plot_super_pixels(values, 'rlt.tif', 'ref.tif')
         if event == 'nmf_num_elements':
             enable_nmf_checkboxes(nmf_trace_checkboxes, int(values['nmf_num_elements']))
         if event == 'Load params':

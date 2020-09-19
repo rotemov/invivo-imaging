@@ -61,6 +61,8 @@ Feel free to open issues in the designated area in this page or to contact me di
     
 2. Choose the relevant files and tune the parameters according to the next section, when you are done click "Run".
 
+* For running remotely with access to the network drive I found the best way is to simply use TeamViewer to run from a Windows 10 computer in the lab.
+
 ## Parameter tuning
 
 1. In general the denoising steps (NoRMCoRRe, detrending and motion correction) will work well with the default parameters, if for some reason it fails choose a different parameter window (denoise start frame and number of frames).
