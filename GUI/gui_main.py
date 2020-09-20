@@ -12,6 +12,7 @@ from subprocess import CalledProcessError
 import pickle
 from pickle import UnpicklingError
 import re
+import webbrowser
 
 VERSION = 0.1
 IM_SIZE = (800, 600)
@@ -38,6 +39,7 @@ LOAD_PARAMS_DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plot
 SSH_LINE = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
 PLOT_FAIL_POPUP = "The file {} was not found or is corrupt.\nThe job might be still running." \
                   "\nPlease check output directory and running jobs.\nError message:\n{}"
+TUTORIAL_LINK = 'https://github.com/rotemov/invivo-imaging'
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -170,7 +172,7 @@ def plot_super_pixels(values, rlt_file, ref_file):
         sg.Popup(PLOT_FAIL_POPUP)
 
 
-def plot_NMF_traces(values, rlt_file, ref_file):
+def plot_nmf_traces(values, rlt_file, ref_file):
     ref_full = os.path.join(values['output_dir'], ref_file)
     rlt_full = os.path.join(values['output_dir'], rlt_file)
     if os.path.exists(ref_full) and os.path.exists(rlt_full):
@@ -303,7 +305,7 @@ def run_command(values):
 
 def get_nmf_trace_checkboxes(num_elements):
     cbs = [None] * num_elements
-    cbs[0] = sg.Checkbox(str(0), default=True, key='nmf_flag_' + str(0), disabled=False, visible=True)
+    cbs[0] = sg.Checkbox('0', default=True, key='nmf_flag_0', disabled=False, visible=True)
     for i in range(1, num_elements):
         cbs[i] = sg.Checkbox(str(i), default=False, key='nmf_flag_' + str(i), disabled=True, visible=True)
     return cbs
@@ -363,6 +365,7 @@ def cancel_job(values):
         handle_called_process_error("Couldn't cancel job.")
 
 
+
 def main():
     main_runner = [
         [sg.Text('Param file:', size=LABEL_SIZE), sg.InputText(key='param_file'),
@@ -401,8 +404,10 @@ def main():
     ]
 
     advanced_params = [
+        [sg.Text('Warning: Some of the illegal parameter combinations have not been disabled. '
+                 'Please revert to the original parameters if your runs constantly fail.')],
         [sg.Text('# bg elements', size=LABEL_SIZE),
-         sg.In(default_text='4', size=INPUT_SIZE, key='bg_rank', enable_events=True)],
+         sg.Slider(range=(1, 8), orientation='h', size=SLIDER_SIZE, key='bg_rank', default_value=4)],
         [sg.Text('Detrend spacing', size=LABEL_SIZE),
          sg.In(default_text='5000', size=INPUT_SIZE, key='detr_spacing', enable_events=True)],
         [sg.Text('Row blocks', size=LABEL_SIZE),
@@ -415,11 +420,9 @@ def main():
          sg.In(default_text='1', size=INPUT_SIZE, key='pass_num', enable_events=True)],
         [sg.Text('Merge correlation threshold', size=LABEL_SIZE),
          sg.In(default_text='0.8', size=INPUT_SIZE, key='merge_corr_thr', enable_events=True)],
-
         [sg.Text('Edge trim', size=LABEL_SIZE),
          sg.Slider(range=(0, 10), orientation='h', size=SLIDER_SIZE, key='edge_trim', default_value=3)],
         [sg.Checkbox('Binning', size=CHECK_BOX_SIZE, default=False, key="binning_flag")],
-
         [sg.Text('Remove dimmest ', size=LABEL_SIZE),
          sg.In(default_text='0', size=INPUT_SIZE, key='remove_dimmest', enable_events=True)],
         [sg.Text('Residual cut', size=LABEL_SIZE),
@@ -463,7 +466,7 @@ def main():
                                   enable_events=True, key='super_pixels_graph')
 
     super_pixels = [
-        [sg.Text('Make sure the super pixels look like the cells or the background')],
+        [sg.Text('Make sure the super pixels look like the cells or the background:')],
         [super_pixels_graph],
         [sg.Button('Open zoomable plot', key='super_pixels_zoom')]
     ]
@@ -524,7 +527,7 @@ def main():
             window['last_job'].update("Last job ran: " + str(last_job))
             window['logs_job_id'].update(str(last_job))
         if event == 'Help':
-            print("Link to github appeared")
+            webbrowser.open_new(TUTORIAL_LINK)
         if event == 'Load outputs':
             print('Loading outputs')
             load_picture_on_canvas(values, nmf_traces_graph, 'NMF_Traces.png')
@@ -542,7 +545,7 @@ def main():
         if event == 'final_traces_zoom':
             open_traces_plot(values, 'temporal_traces.tif', 'spatial_footprints.tif', 'ref.tif')
         if event == 'NMF_traces_zoom':
-            plot_NMF_traces(values, 'rlt.tif', 'ref.tif')
+            plot_nmf_traces(values, 'rlt.tif', 'ref.tif')
         if event == 'super_pixels_zoom':
             plot_super_pixels(values, 'rlt.tif', 'ref.tif')
         if event == 'nmf_num_elements':

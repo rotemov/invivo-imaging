@@ -16,7 +16,6 @@ from datetime import datetime
 DATE_TIME_FORMAT = "%d%m%Y_%H%M%S"
 DATE_TIME_STAMP = datetime.now().strftime(DATE_TIME_FORMAT)
 
-
 sys.path.append(os.getcwd())
 
 # ## Read in movie
@@ -42,10 +41,8 @@ bg_reg_lr = float(sys.argv[19])
 bg_reg_max_iterations = int(sys.argv[20])
 demix_all_flag = bool(int(sys.argv[21]))
 hp_spacing = int(sys.argv[22])
-
 edge_trim = int(sys.argv[23])
 binning_flag = bool(int(sys.argv[24]))
-
 nmf_cells = [int(idx) for idx in list(sys.argv[25])]
 
 
@@ -473,35 +470,32 @@ save_plot('Traces')
 # ## Save Results
 
 if GUI:
-    proc = input('Do you want to save out results? (y/n) ')
-else:
-    proc = 'y'
+    ask_proceed()
 
-if proc.lower() == 'y':
-    suffix = ''
-    files_to_remove = ['spatial_footprints', 'cell_spatial_footprints', 'temporal_traces', 'cell_traces',
-                       'residual_var', 'ref_im', 'rlt', 'ref']
-    for file in files_to_remove:
-        full_path = PLOT_PATH + "/" + file + suffix + '.tif'
-        if os.path.exists(full_path):
-            os.remove(full_path)
-    io.imsave(PLOT_PATH + '/spatial_footprints' + suffix + '.tif', X2)
-    io.imsave(PLOT_PATH + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :nCells])
-    io.imsave(PLOT_PATH + '/temporal_traces' + suffix + '.tif', beta_hat2)
-    io.imsave(PLOT_PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
-    io.imsave(PLOT_PATH + '/residual_var' + suffix + '.tif', res)
-    io.imsave(PLOT_PATH + '/ref_im' + suffix + '.tif', ref_im)
-    with open(PLOT_PATH + '/rlt' + suffix + '.tif', 'wb') as f:
-        pickle.dump(rlt, f)
-    with open(PLOT_PATH + '/ref' + suffix + '.tif', 'wb') as f:
-        pickle.dump([movB.shape[1::-1], ref_im], f)
-    cell_locations = center_of_mass(X2[:, 0].reshape(movB.shape[1::-1]).transpose(1, 0))
-    for idx in range(nCells - 1):
-        cell_locations = np.vstack((cell_locations,
-                                    center_of_mass(X2[:, idx + 1].reshape(movB.shape[1::-1]).transpose(1, 0))))
-    io.imsave(PATH + '/cell_locations' + suffix + '.tif', np.array(cell_locations))
-    if nCells > 1:
-        io.imsave(PATH + '/cell_demixing_matrix' + suffix + '.tif',
-                  np.linalg.inv(np.array(X2[:, :nCells].T @ X2[:, :nCells])) @ X2[:, :nCells].T)
+suffix = ''
+files_to_remove = ['spatial_footprints', 'cell_spatial_footprints', 'temporal_traces', 'cell_traces',
+                   'residual_var', 'ref_im', 'rlt', 'ref']
+for file in files_to_remove:
+    full_path = PLOT_PATH + "/" + file + suffix + '.tif'
+    if os.path.exists(full_path):
+        os.remove(full_path)
+io.imsave(PLOT_PATH + '/spatial_footprints' + suffix + '.tif', X2)
+io.imsave(PLOT_PATH + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :nCells])
+io.imsave(PLOT_PATH + '/temporal_traces' + suffix + '.tif', beta_hat2)
+io.imsave(PLOT_PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
+io.imsave(PLOT_PATH + '/residual_var' + suffix + '.tif', res)
+io.imsave(PLOT_PATH + '/ref_im' + suffix + '.tif', ref_im)
+with open(PLOT_PATH + '/rlt' + suffix + '.tif', 'wb') as f:
+    pickle.dump(rlt, f)
+with open(PLOT_PATH + '/ref' + suffix + '.tif', 'wb') as f:
+    pickle.dump([movB.shape[1::-1], ref_im], f)
+cell_locations = center_of_mass(X2[:, 0].reshape(movB.shape[1::-1]).transpose(1, 0))
+for idx in range(nCells - 1):
+    cell_locations = np.vstack((cell_locations,
+                                center_of_mass(X2[:, idx + 1].reshape(movB.shape[1::-1]).transpose(1, 0))))
+io.imsave(PATH + '/cell_locations' + suffix + '.tif', np.array(cell_locations))
+if nCells > 1:
+    io.imsave(PATH + '/cell_demixing_matrix' + suffix + '.tif',
+              np.linalg.inv(np.array(X2[:, :nCells].T @ X2[:, :nCells])) @ X2[:, :nCells].T)
 
-    print('Data files saved!')
+print('Data files saved!')
