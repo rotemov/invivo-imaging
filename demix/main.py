@@ -10,6 +10,12 @@ import torch
 import scipy.io
 import util_plot
 import pickle
+from datetime import datetime
+
+
+DATE_TIME_FORMAT = "%d%m%Y_%H%M%S"
+DATE_TIME_STAMP = datetime.now().strftime(DATE_TIME_FORMAT)
+
 
 sys.path.append(os.getcwd())
 
@@ -49,8 +55,9 @@ PLOT_PATH = PATH + '/plots/'
 
 
 def save_plot(name):
-    plt.savefig(PLOT_PATH + name + '.png')
-    print("Plot saved: " + name + ".png")
+    full_name = name + ".png"
+    plt.savefig(PLOT_PATH + full_name)
+    print("Plot saved: " + full_name)
     if GUI:
         plt.show()
 
@@ -463,7 +470,12 @@ else:
 
 if proc.lower() == 'y':
     suffix = ''
-
+    files_to_remove = ['spatial_footprints', 'cell_spatial_footprints', 'temporal_traces', 'cell_traces',
+                       'residual_var', 'ref_im', 'rlt', 'ref']
+    for file in files_to_remove:
+        full_path = PLOT_PATH + "/" + file + suffix + '.tif'
+        if os.path.exists(full_path):
+            os.remove(full_path)
     io.imsave(PLOT_PATH + '/spatial_footprints' + suffix + '.tif', X2)
     io.imsave(PLOT_PATH + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :nCells])
     io.imsave(PLOT_PATH + '/temporal_traces' + suffix + '.tif', beta_hat2)
@@ -474,14 +486,13 @@ if proc.lower() == 'y':
         pickle.dump(rlt, f)
     with open(PLOT_PATH + '/ref' + suffix + '.tif', 'wb') as f:
         pickle.dump([movB.shape[1::-1], ref_im], f)
-
     cell_locations = center_of_mass(X2[:, 0].reshape(movB.shape[1::-1]).transpose(1, 0))
     for idx in range(nCells - 1):
         cell_locations = np.vstack((cell_locations,
                                     center_of_mass(X2[:, idx + 1].reshape(movB.shape[1::-1]).transpose(1, 0))))
     io.imsave(PATH + '/cell_locations' + suffix + '.tif', np.array(cell_locations))
-
     if nCells > 1:
         io.imsave(PATH + '/cell_demixing_matrix' + suffix + '.tif',
                   np.linalg.inv(np.array(X2[:, :nCells].T @ X2[:, :nCells])) @ X2[:, :nCells].T)
-    print('Saved!')
+
+    print('Data files saved!')
