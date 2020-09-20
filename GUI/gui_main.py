@@ -69,10 +69,13 @@ def load_picture_on_canvas(values, graph, im_name):
     im_full = os.path.join(values['output_dir'], "plots", im_name)
     print(im_full)
     if os.path.exists(im_full):
-        im_bin = convert_to_bytes(im_full, IM_SIZE)
-        graph.delete_figure("all")
-        graph.draw_image(data=im_bin, location=(0, IM_SIZE[1]))
-        print(im_name + " loaded")
+        try:
+            im_bin = convert_to_bytes(im_full, IM_SIZE)
+            graph.delete_figure("all")
+            graph.draw_image(data=im_bin, location=(0, IM_SIZE[1]))
+            print(im_name + " loaded")
+        except PIL.UnidentifiedImageError as e:
+            sg.Popup(PLOT_FAIL_POPUP + str(e))
     else:
         sg.Popup(PLOT_FAIL_POPUP)
 
