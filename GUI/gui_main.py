@@ -36,7 +36,8 @@ LOAD_PARAMS_DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plot
                            '__len__', 'final_traces_graph', 'param_file_browser', 'input_file_browser',
                            'output_dir_browser', 'stim_dir_browser']
 SSH_LINE = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluster.elsc.huji.ac.il \"{}\""
-PLOT_FAIL_POPUP = "The job might be still running.\nPlease check output directory and running jobs."
+PLOT_FAIL_POPUP = "The file {} was not found or is corrupt.\nThe job might be still running." \
+                  "\nPlease check output directory and running jobs.\nError message:\n{}"
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
@@ -75,9 +76,9 @@ def load_picture_on_canvas(values, graph, im_name):
             graph.draw_image(data=im_bin, location=(0, IM_SIZE[1]))
             print(im_name + " loaded")
         except PIL.UnidentifiedImageError as e:
-            sg.Popup(PLOT_FAIL_POPUP + str(e))
+            sg.Popup(PLOT_FAIL_POPUP.format(im_name, str(e)))
     else:
-        sg.Popup(PLOT_FAIL_POPUP)
+        sg.Popup(PLOT_FAIL_POPUP.format(im_name, "FileNotFoundError"))
 
 
 def open_traces_plot(values, voltage_file, footprint_file, ref_file):
