@@ -21,15 +21,15 @@ CHECK_BOX_SIZE = (25, 1)
 INPUT_SIZE = (10, 1)
 LABEL_SIZE = (25, 1)
 SLIDER_SIZE = (34, 20)
-NUM_PARAMS = 37
+NUM_PARAMS = 39
 DATETIME_FORMAT = "%d%m%Y_%H%M%S"
 NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 'max_size',
                   'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
                   'th_lvl', 'pass_num', 'merge_corr_th', 'remove_dimmest', 'residual_cut',
                   'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
                   'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length', 'job_id',
-                  'job_to_cancel']
-DIR_PARAMS_IDX = [1, 13, 36]
+                  'job_to_cancel', 'edge_trim']
+DIR_PARAMS_IDX = [1, 13, 38]
 MAX_NMF_ELEMENTS = 15
 FREQ_TO_HP_SPACING = 100
 LOAD_PARAMS_DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plots_graph', '-TABGROUP-',
@@ -92,7 +92,7 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
         with open(ref_full, 'rb') as f:
             mov_dims, ref_im = pickle.load(f)
         num_traces = beta_hat2.shape[0]
-        fig = plt.figure(figsize=(25, 3 * num_traces))
+        plt.figure(figsize=(25, 3 * num_traces))
         for idx in range(num_traces):
             plt.subplot(num_traces, 2, 2 * idx + 1)
             plt.plot(beta_hat2[idx, :])
@@ -251,8 +251,12 @@ def get_args_array(values):
     args[32] = values['demix_length']
     args[33] = values['demix_all_frame_flag']
     args[34] = int(int(values['sample_freq']) / FREQ_TO_HP_SPACING)
-    args[35] = parse_nmf_checkboxes(values)
-    args[36] = values['stim_dir']
+
+    args[35] = values['edge_trim']
+    args[36] = values['binning_flag']
+
+    args[37] = parse_nmf_checkboxes(values)
+    args[38] = values['stim_dir']
 
     if values['network_drive_flag']:
         for idx in DIR_PARAMS_IDX:
@@ -363,11 +367,9 @@ def main():
     main_runner = [
         [sg.Text('Param file:', size=LABEL_SIZE), sg.InputText(key='param_file'),
          sg.FileBrowse(key='param_file_browser'), sg.Button('Load params')],
-        [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file',
-                                                               default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/Sq_camera.bin'),
+        [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file', default_text=''),
          sg.FileBrowse(key='input_file_browser')],
-        [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir',
-                                                                     default_text='/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/Quasar/1/output'),
+        [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir', default_text=''),
          sg.FolderBrowse(key='output_dir_browser')],
         [sg.Checkbox('From network drive', size=CHECK_BOX_SIZE, default=False, key='network_drive_flag')],
         [sg.Text('Cluster password', size=LABEL_SIZE), sg.InputText('', key='password', password_char='*')],
@@ -413,6 +415,11 @@ def main():
          sg.In(default_text='1', size=INPUT_SIZE, key='pass_num', enable_events=True)],
         [sg.Text('Merge correlation threshold', size=LABEL_SIZE),
          sg.In(default_text='0.8', size=INPUT_SIZE, key='merge_corr_thr', enable_events=True)],
+
+        [sg.Text('Edge trim', size=LABEL_SIZE),
+         sg.Slider(range=(0, 10), orientation='h', size=SLIDER_SIZE, key='edge_trim', default_value=3)],
+        [sg.Checkbox('Binning', size=CHECK_BOX_SIZE, default=False, key="binning_flag")],
+
         [sg.Text('Remove dimmest ', size=LABEL_SIZE),
          sg.In(default_text='0', size=INPUT_SIZE, key='remove_dimmest', enable_events=True)],
         [sg.Text('Residual cut', size=LABEL_SIZE),

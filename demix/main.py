@@ -42,7 +42,12 @@ bg_reg_lr = float(sys.argv[19])
 bg_reg_max_iterations = int(sys.argv[20])
 demix_all_flag = bool(int(sys.argv[21]))
 hp_spacing = int(sys.argv[22])
-nmf_cells = [int(idx) for idx in list(sys.argv[23])]
+
+edge_trim = int(sys.argv[23])
+binning_flag = bool(int(sys.argv[24]))
+
+nmf_cells = [int(idx) for idx in list(sys.argv[25])]
+
 
 print("Demixing Start")
 print(str(sys.argv))
@@ -99,8 +104,12 @@ movB = mov.reshape(int(mov.shape[0] / 2), 2, int(mov.shape[1] / 2), 2, mov.shape
 movB = np.mean(np.mean(movB, axis=1), axis=2)
 
 print("Binned movie dimensions:" + str(movB.shape))
+if not binning_flag:
+    movB = mov
 
-movB = mov
+# Trimming edges of movie:
+movB = movB[edge_trim:-edge_trim, edge_trim:-edge_trim, :]
+
 
 plt.imshow(np.std(movB, axis=2))
 

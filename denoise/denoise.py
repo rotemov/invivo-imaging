@@ -86,7 +86,7 @@ if not os.path.isfile(out_dir + '/detr_nnorm.tif'):
     print('Movie size: {0}\n'.format(raw_mov.shape))
 
     if len(sys.argv) <= 9 or sys.argv[9] == '':
-        raw_stim = 10 * np.ones(raw_mov.shape[2])  # simulate stimulation values for in vivo data
+        raw_stim = 10 * np.ones(raw_mov.shape[2])  # simulate stimulation values for invivo data
     else:
         wf_path = sys.argv[9]
         if wf_path[-4:] == '.bin':

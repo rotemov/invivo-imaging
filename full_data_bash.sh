@@ -43,6 +43,8 @@ DEMIX_START=${31:-"1"}
 DEMIX_LENGTH=${32:-"10000"}
 DEMIX_ALL_FLAG=${33:-"1"}
 HP_SPACING=${34:-"10"}
+EDGE_TRIM=${35:-"3"}
+BINNING_FLAG=${36:-"0"}
 NMF_CELLS=${35:-"0"}
 STIM_DIR=${36:-""}
 
@@ -87,6 +89,8 @@ echo "Background regression learning rate: "$BG_REG_LR
 echo "Background regression max iterations: "$BG_REG_MAX_ITER
 echo "High pass filter spacing: "$HP_SPACING
 echo "NMF selected cells: "$NMF_CELLS
+echo "Edge trim: "$EDGE_TRIM
+echo "Binning flag: "$BINNING_FLAG
 
 echo -e "\n"
 
@@ -133,8 +137,6 @@ if [ $DEMIX == "1" ]; then
   "$DEMIX_START" "$DEMIX_LENGTH" "$TH_LVL" "$PASS_NUM" "$BG_MASK" "$MERGE_CORR_THR" \
   "$SUP_ONLY" "$REMOVE_DIMMEST" "$RESIDUAL_CUT" "$UPDATE_AC_MAX_ITER" "$UPDATE_AC_TOL" \
   "$UPDATE_AC_MERGE_OVERLAP_THR" "$UPDATE_AC_KEEP_SHAPE" "$BG_REG_LR" "$BG_REG_MAX_ITER" \
-  "$DEMIX_ALL_FLAG" "$HP_SPACING" "$NMF_CELLS"
+  "$DEMIX_ALL_FLAG" "$HP_SPACING" "$EDGE_TRIM" "$BINNING_FLAG" "$NMF_CELLS"
   echo "Demixing stage done"
 fi
-
-# mv $PIPELINE_DIR/logs/* $OUTPUT/.
