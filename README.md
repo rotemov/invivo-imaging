@@ -143,7 +143,7 @@ activate). In general any video you demix on half (or more) of the frames from s
 These are the algorithm's predictions of the regions of interest (ROIs), which means they should have the same shape as the cells.
 
 #### cell diameter
-How big the cell is (in pixels in the video) across its longest axis.
+How big the cell is (in pixels) across its longest axis.
 
 #### cutoff point
 Each pixel in a super pixel get a grade of how "cell-like" it is, decided by how strongly it activates 
@@ -154,7 +154,14 @@ These grades also affect how the voltage traces are calculated from each cell.
 #### correlation threshold fix
 (TODO)
 
+### # bg elements
+This is for discarding background elements such as fluorescent unfocused cells in the background or blood vessels. In general
+this parameter should be set between 3-6 as every video has some form of background.
 
+### edge trim
+The denoising step of the pipeline has a tendency to smear the edges of the frames resulting in the algorithm identifying some 
+unwanted superpixels which look like lines at the edge of the frame. In order to solve this you can choose to trim some pixels
+off the edge of the frames.
 
 ### Workflow
 
