@@ -45,8 +45,8 @@ DEMIX_ALL_FLAG=${33:-"1"}
 HP_SPACING=${34:-"10"}
 EDGE_TRIM=${35:-"3"}
 BINNING_FLAG=${36:-"0"}
-NMF_CELLS=${35:-"0"}
-STIM_DIR=${36:-""}
+NMF_CELLS=${37:-"0"}
+STIM_DIR=${38:-""}
 
 # Deactivating the CL args to enable sourcing in the script
 set --
