@@ -70,13 +70,11 @@ def convert_to_bytes(file_or_bytes, resize=None):
 
 def load_picture_on_canvas(values, graph, im_name):
     im_full = os.path.join(values['output_dir'], "plots", im_name)
-    print(im_full)
     if os.path.exists(im_full):
         try:
             im_bin = convert_to_bytes(im_full, IM_SIZE)
             graph.delete_figure("all")
             graph.draw_image(data=im_bin, location=(0, IM_SIZE[1]))
-            print(im_name + " loaded")
         except PIL.UnidentifiedImageError as e:
             sg.Popup(PLOT_FAIL_POPUP.format(im_name, str(e)))
     else:
@@ -120,7 +118,6 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
             axs[i, 0].set_ylim(-max_v, max_v)
         """
         plt.show()
-        print(voltage_file + " plotted")
     else:
         sg.Popup(PLOT_FAIL_POPUP)
 
@@ -197,7 +194,6 @@ def plot_nmf_traces(values, rlt_file, ref_file):
 
             cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[0], mov_dims[1]).transpose(1, 0)
             cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
-            print("Cell #" + str(cell_num) + " loc: " + str(cell_loc))
             plt.imshow(cell_loc, cmap='jet', alpha=0.5)
         plt.show()
     else:
@@ -526,13 +522,11 @@ def main():
             break
         if event == 'Run':
             last_job = run_command(values)
-            print(last_job)
             window['last_job'].update("Last job ran: " + str(last_job))
             window['logs_job_id'].update(str(last_job))
         if event == 'Help':
             webbrowser.open_new(TUTORIAL_LINK)
         if event == 'Load outputs':
-            print('Loading outputs')
             load_picture_on_canvas(values, nmf_traces_graph, 'NMF_Traces.png')
             load_picture_on_canvas(values, super_pixels_graph, 'super_pixels.png')
             load_picture_on_canvas(values, final_traces_graph, 'Traces.png')
