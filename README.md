@@ -76,39 +76,58 @@ important ones stand for.
 
 ###  Important parameters (Not complete)
 
-GUI - guided user interface, or in simpler terms the windows you interact with as a user.
+#### GUI
+Graphical user interface, or in simpler terms the windows you interact with as a user.
 
-Denoising - Taking the raw video and making it easier to work with. As we all know an experimental apparatus is never
+#### Denoising 
+Taking the raw video and making it easier to work with. As we all know an experimental apparatus is never
 ideal. In the case of invivo voltage imaging using optogenetics the main problems are registration of the movement
 (tiny movements of the mouse or optical machinery), photobleaching (the fluorophore not being activated properly), 
 Z-axis movements (AKA defocusing) and the fact that we are sampling a continuous process discretely. The denoising step 
 is the pipeline's way to partially fix the artifacts from these problems.
 
-NoRMCorre - Registrates the video (after this runs most of the cells mostly stay in place)
+##### NoRMCorre
+Registrates the video (after this runs most of the cells mostly stay in place)
 
-Detrending - Decreases loss of signal due to photobleaching, discrete sampling and defocusing (using PMD and spline 
+##### Detrending
+Decreases loss of signal due to photobleaching, discrete sampling and defocusing (using PMD and spline 
 detrending, don't worry you don't have to understand what this means).
 
-Motion correction - Decreases residual motion artifacts remaining after NoRMCorre and detrending.
+##### Motion correction
+Decreases residual motion artifacts remaining after NoRMCorre and detrending.
 
-denoise start frame, number of frames - Some of the steps in denoising don't require the full video. Moreover that they
-can be really heavy (even for the cluster) thus we use only part of the video to do this step. It is always recommended
-to use a representing part of the video (frames where all of the cells of interest activate). For large FOVs (more than
-800 total pixels per frame) it is recommended to keep the number of frames under 10k and usually 5k is enough.
+##### denoise start frame, number of frames
+Some of the steps in denoising don't require the full video. Moreover that they
+are not very tractable (even for the cluster) thus we use only part of the video to do this step. It is always recommended
+to use a representing part of the video (frames where all of the cells of interest activate), but it not neccessary. 
+For large FOVs (more than 800 total pixels per frame) it is recommended to keep the number of frames under 10k and usually 
+5k is enough.
 
-demix start frame, number of frames - In general the demixing stage is much less robust than the denoising stage. 
+### Demixing
+Taking the denoised video, identifying the cells and outputing the voltage traces of their activity. In general the demixing stage 
+is much less robust than the denoising stage. It will require some iterations to get the parameters right. 
 
-superpixels - These are the algorithm's predictions of the regions of interest (ROIs), 
-which means they should have the same shape as the cells.
+#### demix start frame, number of frames
+It is best to demix on the whole video. However some videos are extremely large which means it can take a long time to demix them.
+If you don't demix on all the frames it is essential to choose a representing part of the video (frames where all of the cells of interest 
+activate). In general any video you demix on half (or more) of the frames from should work fine.
 
-cutoff point - each pixel in a super pixel get a grade of how "cell-like" it is, decided by how strongly it activates 
+#### superpixels
+These are the algorithm's predictions of the regions of interest (ROIs), which means they should have the same shape as the cells.
+
+#### cell diameter
+How big the cell is (in pixels in the video) across its longest axis.
+
+#### cutoff point
+Each pixel in a super pixel get a grade of how "cell-like" it is, decided by how strongly it activates 
 when it's neighbors activate. This means we would expect the central pixels of a ROI to have a higher grade. In order
 to identify the cell's borders we give a minimal grade for a pixel to have in order for it to be part of the cell.
 These grades also affect how the voltage traces are calculated from each cell.
 
-correlation threshold fix - 
+#### correlation threshold fix
+TODO
 
-cell diameter - how big the cell is (in pixels in the video) across its longest axis.
+
 
 ### Workflow
 
@@ -117,8 +136,12 @@ parameters, if for some reason it fails choose a different parameter window (den
 This means that most likely you will check the NoRMCorre, Detrending and Motion correction checkboxes in the main runner
 only on your first run.
 
-2. Demixing will require some iterations. Start with the default parameters and see which cells the algorithm detects 
-in the superpixels and NMF traces tab.
+2. Demixing will require some iterations. If you have a video you already analysed with a similar video 
+(same number of cells / microscope parameters / lighting / experimental apparatus) then start from the parameters that 
+worked for that video and modify from there. Otherwise start with the default parameters.
+
+3. After each run see which cells the algorithm detects in the superpixels and NMF traces tab. You want the super pixels to
+resemble the cells as much as possible and 
 
 3. Increasing the parameters: correlation threshold fix, cutoff point will make the cells smaller / remove unwanted 
 backgrounds.
