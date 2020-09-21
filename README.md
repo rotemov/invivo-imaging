@@ -30,15 +30,30 @@ planning only to use the pipeline and not develop it) please follow the followin
         sudo apt update
         sudo apt install sshpass
 
-    f. (recommended) Map the adam-lab network drive following this tutorial: https://support.microsoft.com/en-us/help/4026635/windows-map-a-network-drive (you will need to mail Nizar to get a user).
+    f. (recommended) Map the adam-lab network drive following this tutorial: 
+    https://support.microsoft.com/en-us/help/4026635/windows-map-a-network-drive 
+    (you will need to mail Nizar to get a user).
     
 2. Install Anaconda from https://www.anaconda.com/products/individual (64-bit).
 
 3. Install python 3.6 from https://www.python.org/downloads/ (64-bit).
 
-4.  a. Click Code --> Download ZIP (at the top of this page)
+4.  Perform one (a or b):
+    
+    a. easy-upgrade option (recommended)
+        
+       * Install git from https://git-scm.com/downloads
+        
+       * In an Anaconda3 prompt enter the following commands:
+        
+        cd <directory where you want the pipeline installed>
+        git clone https://github.com/rotemov/invivo-imaging.git
+    
+    b. Default
+    
+       * Click Code --> Download ZIP (at the top of this page)
   
-    b. Unzip the pipeline where you want it (if you don't have an unzipper use https://www.7-zip.org/)
+       * Unzip the pipeline where you want it (if you don't have an unzipper use https://www.7-zip.org/)
   
 5. Open an Anaconda3 terminal:
     
@@ -53,9 +68,21 @@ planning only to use the pipeline and not develop it) please follow the followin
     b. Run the command:
     
        conda env create -f invivo-gui.yml
- 
+
 Great, now you should be all set to run the pipeline!
        
+### Updating
+
+a. If you installed via the easy-update option (4a) in an Anaconda3 prompt enter the following command:
+
+    cd <directory where you installed the pipeline>\invivo-imaging
+    git pull
+
+   Note: You may have to sign up to GitHub as the "git pull" command might ask you to enter username and password.
+    
+b. If you did not use the easy-update option repeat step 4b of installation and replace the files on your computer 
+with the files from the downloaded zip.
+
 ## Running the pipeline
 
 1. Open an Anaconda3 prompt and run the commands:

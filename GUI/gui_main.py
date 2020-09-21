@@ -365,6 +365,14 @@ def cancel_job(values):
         handle_called_process_error("Couldn't cancel job.")
 
 
+def update_pipline():
+    try:
+        output = subprocess.check_output(['git pull origin master'])
+        sg.Popup("Pipeline was updated!\nPlease reopen for changes to take effect.\ngit logs:\n" + output.decode('utf-8'))
+    except CalledProcessError:
+        handle_called_process_error("Could not update please revert to using step 4b in the tutorial.")
+
+
 def main():
     main_runner = [
         [sg.Text('Param file:', size=LABEL_SIZE), sg.InputText(key='param_file'),
@@ -511,7 +519,7 @@ def main():
     layout = [
         [sg.TabGroup(tab_group_layout, enable_events=True, key='-TABGROUP-')],
         [sg.Button('Run'), sg.Button('Help'), sg.Button('Load outputs'), sg.Button('Check running jobs'),
-         sg.Button('Quit')]
+         sg.Button('Update pipeline'), sg.Button('Quit')]
     ]
 
     window = sg.Window('Invivo imaging - Adam Lab - ver' + str(VERSION), layout, no_titlebar=False)
@@ -557,6 +565,8 @@ def main():
             check_running_jobs(values)
         if event == 'Cancel job':
             cancel_job(values)
+        if event == 'Update pipeline':
+            update_pipline()
 
         for key in NUM_FIELD_KEYS:
             if event == key:
