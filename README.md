@@ -8,6 +8,9 @@ Pipeline was tested on Ubuntu and Windows 10 machines connected to HUJI's networ
 
 Feel free to open issues in the designated area in this page or to contact me directly: rotem.ovadia@mail.huji.ac.il.
 
+At the moment we don't have a guide for cluster installation as it is a tedious process. For GUI users (anybody 
+planning only to use the pipeline and not develop it) please follow the following installation steps to start.
+
 ## Installation
 
 1. For windows users:
@@ -50,6 +53,8 @@ Feel free to open issues in the designated area in this page or to contact me di
     b. Run the command:
     
        conda env create -f invivo-gui.yml
+ 
+Great, now you should be all set to run the pipeline!
        
 ## Running the pipeline
 
@@ -61,12 +66,67 @@ Feel free to open issues in the designated area in this page or to contact me di
     
 2. Choose the relevant files and tune the parameters according to the next section, when you are done click "Run".
 
-* For running remotely with access to the network drive I found the best way is to simply use TeamViewer to run from a Windows 10 computer in the lab.
+* For running remotely with access to the network drive I found the best way is to simply use TeamViewer to run the GUI 
+on a Windows 10 computer in the lab.
 
-## Parameter tuning
+## Parameter Tuning
 
-1. In general the denoising steps (NoRMCoRRe, detrending and motion correction) will work well with the default parameters, if for some reason it fails choose a different parameter window (denoise start frame and number of frames).
+Before we jump into the work flow it's good to have a basic understanding of  some of the jargon and what the 
+important ones stand for.
 
-2. Demixing will require some iterations. Start with the default parameters and see which cells the algorithm detects.
+###  Important parameters (Not complete)
 
-    (To be continued)
+GUI - guided user interface, or in simpler terms the windows you interact with as a user.
+
+Denoising - Taking the raw video and making it easier to work with. As we all know an experimental apparatus is never
+ideal. In the case of invivo voltage imaging using optogenetics the main problems are registration of the movement
+(tiny movements of the mouse or optical machinery), photobleaching (the fluorophore not being activated properly), 
+Z-axis movements (AKA defocusing) and the fact that we are sampling a continuous process discretely. The denoising step 
+is the pipeline's way to partially fix the artifacts from these problems.
+
+NoRMCorre - Registrates the video (after this runs most of the cells mostly stay in place)
+
+Detrending - Decreases loss of signal due to photobleaching, discrete sampling and defocusing (using PMD and spline 
+detrending, don't worry you don't have to understand what this means).
+
+Motion correction - Decreases residual motion artifacts remaining after NoRMCorre and detrending.
+
+denoise start frame, number of frames - Some of the steps in denoising don't require the full video. Moreover that they
+can be really heavy (even for the cluster) thus we use only part of the video to do this step. It is always recommended
+to use a representing part of the video (frames where all of the cells of interest activate). For large FOVs (more than
+800 total pixels per frame) it is recommended to keep the number of frames under 10k and usually 5k is enough.
+
+demix start frame, number of frames - In general the demixing stage is much less robust than the denoising stage. 
+
+superpixels - These are the algorithm's predictions of the regions of interest (ROIs), 
+which means they should have the same shape as the cells.
+
+cutoff point - each pixel in a super pixel get a grade of how "cell-like" it is, decided by how strongly it activates 
+when it's neighbors activate. This means we would expect the central pixels of a ROI to have a higher grade. In order
+to identify the cell's borders we give a minimal grade for a pixel to have in order for it to be part of the cell.
+These grades also affect how the voltage traces are calculated from each cell.
+
+correlation threshold fix - 
+
+cell diameter - how big the cell is (in pixels in the video) across its longest axis.
+
+### Workflow
+
+1. In general the denoising steps (NoRMCoRRe, detrending and motion correction) will work well with the default 
+parameters, if for some reason it fails choose a different parameter window (denoise start frame and number of frames).
+This means that most likely you will check the NoRMCorre, Detrending and Motion correction checkboxes in the main runner
+only on your first run.
+
+2. Demixing will require some iterations. Start with the default parameters and see which cells the algorithm detects 
+in the superpixels and NMF traces tab.
+
+3. Increasing the parameters: correlation threshold fix, cutoff point will make the cells smaller / remove unwanted 
+backgrounds.
+
+4. Increasing cell diameter will make the identified cells larger (if you see the pipline is missing some of the larger
+cells increase this).
+
+(To be continued ...)
+
+
+
