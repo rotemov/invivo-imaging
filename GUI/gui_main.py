@@ -14,7 +14,7 @@ from pickle import UnpicklingError
 import re
 import webbrowser
 
-VERSION = 0.1
+VERSION = 1.1
 IM_SIZE = (800, 600)
 POPUP_SIZE = (200, 400)
 sg.theme('Reddit')
