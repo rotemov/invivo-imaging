@@ -84,9 +84,10 @@ def load_picture_on_canvas(values, graph, im_name):
 
 
 def open_traces_plot(values, voltage_file, footprint_file, ref_file):
-    voltage_full = os.path.join(values['output_dir'], voltage_file)
-    footprint_full = os.path.join(values['output_dir'], footprint_file)
-    ref_full = os.path.join(values['output_dir'], ref_file)
+    plot_dir = os.path.join(values['output_dir'], 'plots')
+    voltage_full = os.path.join(plot_dir, voltage_file)
+    footprint_full = os.path.join(plot_dir, footprint_file)
+    ref_full = os.path.join(plot_dir, ref_file)
 
     if os.path.exists(voltage_full) and os.path.exists(ref_full) and os.path.exists(footprint_full):
         beta_hat2 = skio.imread(voltage_full)
@@ -125,8 +126,9 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
 
 
 def plot_super_pixels(values, rlt_file, ref_file):
-    ref_full = os.path.join(values['output_dir'], ref_file)
-    rlt_full = os.path.join(values['output_dir'], rlt_file)
+    plot_dir = os.path.join(values['output_dir'], 'plots')
+    ref_full = os.path.join(plot_dir, ref_file)
+    rlt_full = os.path.join(plot_dir, rlt_file)
     if os.path.exists(ref_full) and os.path.exists(rlt_full):
         with open(ref_full, 'rb') as f:
             mov_dims, ref_im = pickle.load(f)
@@ -173,13 +175,15 @@ def plot_super_pixels(values, rlt_file, ref_file):
 
 
 def plot_nmf_traces(values, rlt_file, ref_file):
-    ref_full = os.path.join(values['output_dir'], ref_file)
-    rlt_full = os.path.join(values['output_dir'], rlt_file)
+    plot_dir = os.path.join(values['output_dir'], 'plots')
+    ref_full = os.path.join(plot_dir, ref_file)
+    rlt_full = os.path.join(plot_dir, rlt_file)
     if os.path.exists(ref_full) and os.path.exists(rlt_full):
         with open(ref_full, 'rb') as f:
             mov_dims, ref_im = pickle.load(f)
         with open(rlt_full, 'rb') as f:
             rlt = pickle.load(f)
+        ref_im = ref_im.transpose(1, 0)
         cell_ct = rlt["fin_rlt"]["c"].shape[1]
         plt.figure(figsize=(25, 3 * cell_ct))
         for cell_num in range(cell_ct):
@@ -191,7 +195,7 @@ def plot_nmf_traces(values, rlt_file, ref_file):
             lower, upper = np.percentile(ref_im.flatten(), [1, 99])
             plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
 
-            cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[1], mov_dims[0])  # .transpose(1,0)
+            cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[0], mov_dims[1]).transpose(1, 0)
             cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
             print("Cell #" + str(cell_num) + " loc: " + str(cell_loc))
             plt.imshow(cell_loc, cmap='jet', alpha=0.5)

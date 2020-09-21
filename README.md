@@ -27,7 +27,7 @@ Feel free to open issues in the designated area in this page or to contact me di
         sudo apt update
         sudo apt install sshpass
 
-    f. (Optional) Map the adam-lab network drive following this tutorial: https://support.microsoft.com/en-us/help/4026635/windows-map-a-network-drive (you will need to mail Nizar to get a user).
+    f. (recommended) Map the adam-lab network drive following this tutorial: https://support.microsoft.com/en-us/help/4026635/windows-map-a-network-drive (you will need to mail Nizar to get a user).
     
 2. Install Anaconda from https://www.anaconda.com/products/individual (64-bit).
 
