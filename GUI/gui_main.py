@@ -369,7 +369,6 @@ def cancel_job(values):
         handle_called_process_error("Couldn't cancel job.")
 
 
-
 def main():
     main_runner = [
         [sg.Text('Param file:', size=LABEL_SIZE), sg.InputText(key='param_file'),
