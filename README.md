@@ -73,10 +73,7 @@ Great, now you should be all set to run the pipeline!
        
 ### Updating
 
-a. If you installed via the easy-update option (4a) in an Anaconda3 prompt enter the following command:
-
-    cd <directory where you installed the pipeline>\invivo-imaging
-    git pull
+a. If you installed via the easy-update option (4a) click "Update pipeline" at the bottom of the GUI.
 
    Note: You may have to sign up to GitHub as the "git pull" command might ask you to enter username and password.
     

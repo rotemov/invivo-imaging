@@ -367,7 +367,7 @@ def cancel_job(values):
 
 def update_pipline():
     try:
-        output = subprocess.check_output(['git pull origin master'])
+        output = subprocess.check_output('git pull')
         sg.Popup("Pipeline was updated!\nPlease reopen for changes to take effect.\ngit logs:\n" + output.decode('utf-8'))
     except CalledProcessError:
         handle_called_process_error("Could not update please revert to using step 4b in the tutorial.")
