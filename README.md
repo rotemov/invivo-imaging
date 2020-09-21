@@ -149,7 +149,8 @@ backgrounds.
 4. Increasing cell diameter will make the identified cells larger (if you see the pipline is missing some of the larger
 cells increase this).
 
+5. The logs are meant mostly for the developers, however if you know how tracebacks work don't hesitate to use them to
+to figure out what went wrong. If you are experiencing issues you can always email rotem.ovadia@mail.huji.ac.il or open
+an issue on github with the job number and I will try to solve it.
+
 (To be continued ...)
-
-
-
