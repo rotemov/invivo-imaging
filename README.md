@@ -125,7 +125,7 @@ to identify the cell's borders we give a minimal grade for a pixel to have in or
 These grades also affect how the voltage traces are calculated from each cell.
 
 #### correlation threshold fix
-TODO
+(TODO)
 
 
 

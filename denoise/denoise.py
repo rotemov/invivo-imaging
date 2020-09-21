@@ -39,11 +39,11 @@ trunc_end = trunc_start + trunc_length
 if not os.path.isfile(out_dir + '/detr_nnorm.tif'):
     if mov_in[-4:] == '.tif':
         # load movie from tif
-        raw_mov = imio.imread(data_dir + '/' + mov_in).transpose(1, 2, 0)
+        raw_mov = imio.imread(out_dir + '/' + mov_in).transpose(1, 2, 0)
         nrows = raw_mov.shape[0]
         ncols = raw_mov.shape[1]
     elif mov_in[-4:] == '.bin':
-        raw_mov = np.fromfile(data_dir + '/' + mov_in, dtype=np.int16);
+        raw_mov = np.fromfile(out_dir + '/' + mov_in, dtype=np.int16);
         if os.path.isfile(data_dir + '/experimental_parameters.txt'):
             with open(data_dir + '/experimental_parameters.txt') as file:
                 x = file.read()
