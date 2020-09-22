@@ -11,15 +11,11 @@ import scipy.io
 import util_plot
 import pickle
 from datetime import datetime
+from demix import plots
 
-
-DATE_TIME_FORMAT = "%d%m%Y_%H%M%S"
-DATE_TIME_STAMP = datetime.now().strftime(DATE_TIME_FORMAT)
-
+# TODO: addd arg parser
 sys.path.append(os.getcwd())
-
-# ## Read in movie
-data_dir = str(sys.argv[1])
+data_path = str(sys.argv[1])
 cut_off_point = float(sys.argv[2])
 corr_th_fix = float(sys.argv[3])
 patch_size_edge = int(sys.argv[4])
@@ -44,94 +40,66 @@ hp_spacing = int(sys.argv[22])
 edge_trim = int(float(sys.argv[23]))
 binning_flag = bool(int(sys.argv[24]))
 nmf_cells = [int(idx) for idx in list(sys.argv[25])]
+output_path = sys.argv[26]
+plot_path = output_path + '/plots/'
+
+# TODO: add as params
+suffix = ''
+optopatch_stim = False
 
 
-print("Demixing Start")
-print(str(sys.argv))
-
-GUI = False
-OPTOPATCH_STIM = False
-
-PATH = data_dir + '/output'
-PLOT_PATH = PATH + '/plots/'
-
-
-def save_plot(name):
-    full_name = name + ".png"
-    plt.savefig(PLOT_PATH + full_name)
-    print("Plot saved: " + full_name)
-    if GUI:
-        plt.show()
+def remove_previous_outputs(path, suffix):
+    files_to_remove = ['spatial_footprints', 'cell_spatial_footprints', 'temporal_traces', 'cell_traces',
+                       'residual_var', 'ref_im', 'rlt', 'ref']
+    for file in files_to_remove:
+        full_path = path + "/" + file + suffix + '.tif'
+        if os.path.exists(full_path):
+            os.remove(full_path)
 
 
-def ask_proceed():
-    proc = input('Ok to proceed? (y/n) ')
-    if proc.lower() == 'n':
-        raise KeyboardInterrupt('Stop requested by user.')
+def load_movie(path):
+    """
+    Reads in motion corrected movie.
+    """
+    if os.path.isfile(path + '/motion_corrected.tif'):
+        mov = io.imread(path + '/motion_corrected.tif').transpose(1, 2, 0)
+    elif os.path.isfile(path + '/denoised.tif'):
+        mov = io.imread(path + '/denoised.tif')
+    else:
+        raise ValueError('No valid input file')
+    return mov
 
 
-# read in motion corrected movie
-noise = np.squeeze(io.imread(PATH + '/Sn_image.tif'))
-[nrows, ncols] = noise.shape
-
-if os.path.isfile(PATH + '/motion_corrected.tif'):
-    mov = io.imread(PATH + '/motion_corrected.tif').transpose(1, 2, 0)
-elif os.path.isfile(PATH + '/denoised.tif'):
-    mov = io.imread(PATH + '/denoised.tif')
-else:
-    raise ValueError('No valid input file')
-
-print("Movie dimensions: " + str(mov.shape))
-
-# read in the mask for blood
-if os.path.isfile(PATH + '/bloodmask.tif'):
-    bloodmask = np.squeeze(io.imread(PATH + '/bloodmask.tif'))
-    mov = mov * np.repeat(np.expand_dims(noise * bloodmask, 2), mov.shape[2], axis=2)
-else:
-    mov = mov * np.repeat(np.expand_dims(noise, 2), mov.shape[2], axis=2)
-
-plt.imshow(np.std(mov, axis=2))
-save_plot('Average')
-# display average movie
+def add_blood_mask(mov, noise):
+    if os.path.isfile(output_path + '/bloodmask.tif'):
+        bloodmask = np.squeeze(io.imread(output_path + '/bloodmask.tif'))
+        mov = mov * np.repeat(np.expand_dims(noise * bloodmask, 2), mov.shape[2], axis=2)
+    else:
+        mov = mov * np.repeat(np.expand_dims(noise, 2), mov.shape[2], axis=2)
+    return mov
 
 
-# ## Spatial 2x2 Binning
-
-movB = mov.reshape(int(mov.shape[0] / 2), 2, int(mov.shape[1] / 2), 2, mov.shape[2])
-movB = np.mean(np.mean(movB, axis=1), axis=2)
-
-print("Binned movie dimensions:" + str(movB.shape))
-if not binning_flag:
-    movB = mov
-
-# Trimming edges of movie:
-movB = movB[edge_trim:-edge_trim, edge_trim:-edge_trim, :]
+def bin_and_trim_movie(mov, binning_flag):
+    if binning_flag:
+        movB = mov.reshape(int(mov.shape[0] / 2), 2, int(mov.shape[1] / 2), 2, mov.shape[2])
+        movB = np.mean(np.mean(movB, axis=1), axis=2)
+    else:
+        movB = mov
+    movB = movB[edge_trim:-edge_trim, edge_trim:-edge_trim, :]
+    return movB
 
 
-plt.imshow(np.std(movB, axis=2))
-
-save_plot('Average_Binned_Movie')
-# show standard deviation image of binned movie
-
-
-# ## Load Manually Initialized Background
-
-# TODO: solve bg output
-bg_flag = os.path.isfile(PATH + '/ff.tif')
-
-if bg_flag:
+def load_bg_mask(mov, mov_b, path):
+    # TODO: Add bg support
     # import manually initialized background components
-    ff_ini = io.imread(PATH + '/ff.tif')
-    fb_ini = io.imread(PATH + '/fb.tif')
+    ff_ini = io.imread(path + '/ff.tif')
+    fb_ini = io.imread(path + '/fb.tif')
 
     # bin the spatial components
     fb_ini = fb_ini.reshape(mov.shape[1], mov.shape[0], -1).transpose(1, 0, 2)
-    #     fb_ini = fb_ini.reshape(int(fb_ini.shape[0]/2),2,int(fb_ini.shape[1]/2),2,fb_ini.shape[2])
-    #     fb_ini = np.mean(np.mean(fb_ini,axis=1),axis=2)
 
-    fb_ini.shape
+    print(fb_ini.shape)
 
-    # plot manually initialized background components
     plt.figure(figsize=(30, 20))
 
     for i in range(6):
@@ -140,178 +108,70 @@ if bg_flag:
         plt.subplot(3, 4, 2 * i + 2)
         plt.imshow(fb_ini[:, :, i])
         plt.show()
-
-if bg_flag:
-    # select which background components to use for initialization
     bkg_components = range(3)
-
-    fb_ini = fb_ini[:, :, bkg_components].reshape(movB.shape[0] * movB.shape[1], len(bkg_components))
+    fb_ini = fb_ini[:, :, bkg_components].reshape(mov_b.shape[0] * mov_b.shape[1], len(bkg_components))
     ff_ini = ff_ini[:, bkg_components]
+    return fb_ini, ff_ini
 
-# ## Get Cell Spatial Supports from High Pass Filtered Movie
+
+def get_valid_window(movie, start, length):
+    total_frames = movie.shape[2]
+    if start < 1 or demix_all_flag:
+        start = 1
+    if length > total_frames - start or demix_all_flag:
+        length = total_frames - start - 10
+    first_frame = start
+    last_frame = start + length
+    return first_frame, last_frame
 
 
-start = time.time()
+def tv_norm(image):
+    return np.sum(np.abs(image[:, :-1] - image[:, 1:])) + np.sum(np.abs(image[:-1, :] - image[1:, :]))
 
-# select which window to demix on
-## Making sure valid input
-total_frames = movB.shape[2]
-if trunc_start < 1 or demix_all_flag:
-    trunc_start = 1
-if window_length > total_frames - trunc_start or demix_all_flag:
-    window_length = total_frames - trunc_start - 10
 
-first_frame = trunc_start
-last_frame = trunc_start + window_length
+def get_cell_locations(X2, n_cells, mov_dims):
+    cell_locations = center_of_mass(X2[:, 0].reshape(mov_dims).transpose(1, 0))
+    for idx in range(n_cells - 1):
+        cell_locations = np.vstack((cell_locations,
+                                    center_of_mass(X2[:, idx + 1].reshape(mov_dims).transpose(1, 0))))
+    return cell_locations
 
-movHP = sup.hp_filt_data(movB, spacing=hp_spacing)
 
-rlt = sup.axon_pipeline_Y(movHP[:, :, first_frame:last_frame].copy(), fb_ini=np.zeros(1), ff_ini=np.zeros(1),
+def get_cell_demixing_matrix(X2, n_cells):
+    return np.linalg.inv(np.array(X2[:, :n_cells].T @ X2[:, :n_cells])) @ X2[:, :n_cells].T
 
-                          ##### Superpixel parameters
-                          # thresholding level
-                          th=[th_lvl],
 
-                          # correlation threshold for finding superpixels
-                          # (range around 0.8-0.99)
-                          cut_off_point=[cut_off_point],
+def save_outputs(path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dims):
+    remove_previous_outputs(path, suffix)
+    io.imsave(path + '/spatial_footprints' + suffix + '.tif', X2)
+    io.imsave(path + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :n_cells])
+    io.imsave(path + '/temporal_traces' + suffix + '.tif', beta_hat2)
+    io.imsave(path + '/cell_traces' + suffix + '.tif', beta_hat2[:n_cells, :])
+    io.imsave(path + '/residual_var' + suffix + '.tif', res)
+    io.imsave(path + '/ref_im' + suffix + '.tif', ref_im)
+    with open(path + '/rlt' + suffix + '.tif', 'wb') as f:
+        pickle.dump(rlt, f)
+    with open(path + '/ref' + suffix + '.tif', 'wb') as f:
+        pickle.dump([mov_dims, ref_im], f)
+    io.imsave(path + '/cell_locations' + suffix + '.tif', np.array(get_cell_locations(X2, n_cells, mov_dims)))
+    if n_cells > 1:
+        io.imsave(path + '/cell_demixing_matrix' + suffix + '.tif', get_cell_demixing_matrix(X2, n_cells))
+    print('Data files saved!')
 
-                          # minimum pixel count of a superpixel
-                          # don't need to change these unless cell sizes change
-                          length_cut=[int(patch_size_edge ** 2 / 5)],
 
-                          # maximum pixel count of a superpixel
-                          # don't need to change these unless cell sizes change
-                          length_max=[patch_size_edge ** 2 * 2],
+def initialize_bg_parameters(mov_b, first_frame, last_frame):
+    dims = mov_b.shape[:2]
+    T = last_frame - first_frame
+    movVec = mov_b.reshape(np.prod(dims), -1, order="F")
+    mov_min = movVec.min()
+    if mov_min < 0:
+        mov_min_pw = movVec.min(axis=1, keepdims=True)
+        movVec -= mov_min_pw
+    normalize_factor = np.std(movVec, axis=1, keepdims=True) * T
+    return dims, movVec, normalize_factor
 
-                          patch_size=[patch_size_edge, patch_size_edge],
 
-                          # correlation threshold between superpixels for merging
-                          # likely don't need to change this
-                          residual_cut=[residual_cut],
-
-                          pass_num=pass_num,
-
-                          bg=bg_mask,
-
-                          ##### Cell-finding, NMF parameters
-                          # correlation threshold of pixel with superpixel trace to include pixel in cell
-                          # (range 0.3-0.6)
-                          corr_th_fix=corr_th_fix,
-
-                          # correlation threshold for merging two cells
-                          # (default 0.8, but likely don't need to change)
-                          merge_corr_thr=merge_corr_thr,
-
-                          ##### Other options
-                          # if True, only superpixel analysis run; if False, NMF is also run to find cells
-                          sup_only=sup_only,
-
-                          # the number of superpixels to remove (starting from the dimmest)
-                          remove=remove_dimmest
-                          )
-
-print("Demixing took: " + str(time.time() - start) + " sec")
-
-# plot pure superpixels
-num_pass = len(rlt["superpixel_rlt"])
-
-scale = np.maximum(1, (
-        rlt["superpixel_rlt"][0]["connect_mat_1"].shape[1] / rlt["superpixel_rlt"][0]["connect_mat_1"].shape[0]))
-plt.figure(figsize=(10 * scale * num_pass, 10))
-
-plt.subplot(1, num_pass + 2, 1)
-plt.imshow(np.std(movB, axis=2))
-
-for p in range(num_pass):
-    connect_mat_1 = rlt["superpixel_rlt"][p]["connect_mat_1"]
-    pure_pix = rlt["superpixel_rlt"][p]["pure_pix"]
-    brightness_rank = rlt["superpixel_rlt"][p]["brightness_rank"]
-    ax1 = plt.subplot(1, num_pass + 2, p + 2)
-    dims = connect_mat_1.shape
-    connect_mat_1_pure = connect_mat_1.copy()
-    connect_mat_1_pure = connect_mat_1_pure.reshape(np.prod(dims), order="F")
-    connect_mat_1_pure[~np.in1d(connect_mat_1_pure, pure_pix)] = 0
-    connect_mat_1_pure = connect_mat_1_pure.reshape(dims, order="F")
-
-    ax1.imshow(connect_mat_1_pure, cmap="nipy_spectral_r")
-
-    for ii in range(len(pure_pix)):
-        pos = np.where(connect_mat_1_pure[:, :] == pure_pix[ii])
-        pos0 = pos[0]
-        pos1 = pos[1]
-        """ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
-                 verticalalignment='bottom', horizontalalignment='right', color='black',
-                 fontsize=15)"""
-        ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
-                 f"{brightness_rank[ii] + 1}",
-                 verticalalignment='bottom', horizontalalignment='right', color='black',
-                 fontsize=15)
-
-    ax1.set(title="pass " + str(p + 1))
-    ax1.title.set_fontsize(15)
-    ax1.title.set_fontweight("bold")
-    # plt.tight_layout()
-    save_plot('super_pixels')
-
-# plot all cell traces and footprints from NMF
-cell_ct = rlt["fin_rlt"]["c"].shape[1]
-
-plt.figure(figsize=(25, 3 * cell_ct))
-
-ref_im = np.std(movB, axis=2).transpose(1, 0)
-
-for cell_num in range(cell_ct):
-    plt.subplot(cell_ct, 2, 2 * cell_num + 1)
-    plt.plot(rlt["fin_rlt"]["c"][:, cell_num])
-    plt.title(cell_num, size=24)
-
-    plt.subplot(cell_ct, 2, 2 * cell_num + 2)
-    lower, upper = np.percentile(ref_im.flatten(), [1, 99])
-    plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
-
-    cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(movB.shape[1], movB.shape[0])  # .transpose(1,0)
-    cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
-
-    print("Cell #" + str(cell_num) + " loc: " + str(cell_loc))
-
-    plt.imshow(cell_loc, cmap='jet', alpha=0.5)
-
-save_plot('NMF_Traces')
-
-if GUI:
-    ask_proceed()
-
-# ## Get Background Components from Unfiltered Movie
-
-# TODO: Add input from user for good / bad cells
-
-# rank of background to model, if none selected
-final_cells = nmf_cells
-bg_rank = bg_rank
-
-nCells = len(final_cells)
-
-a = rlt["fin_rlt"]["a"][:, final_cells].copy()
-c = rlt["fin_rlt"]["c"][:, final_cells].copy()
-b = rlt["fin_rlt"]["b"].copy()
-
-dims = movB.shape[:2]
-T = last_frame - first_frame
-
-movVec = movB.reshape(np.prod(dims), -1, order="F")
-mov_min = movVec.min()
-if mov_min < 0:
-    mov_min_pw = movVec.min(axis=1, keepdims=True)
-    movVec -= mov_min_pw
-
-normalize_factor = np.std(movVec, axis=1, keepdims=True) * T
-
-if bg_flag:
-    fb = fb_ini
-    ff = ff_ini[first_frame:last_frame, :]
-    bg_rank = fb.shape[1]
-else:
+def initialize_bg(a, movVec, first_frame, last_frame):
     bg_comp_pos = np.where(a.sum(axis=1) == 0)[0]
     y_temp = movVec[bg_comp_pos, first_frame:last_frame]
     fb = np.zeros([movVec.shape[0], bg_rank])
@@ -320,182 +180,184 @@ else:
     fb[bg_comp_pos, :] = svd.fit_transform(y_temp)
     ff = svd.components_.T
     ff = ff - ff.mean(axis=0, keepdims=True)
-
-a, c, b, fb, ff, res, corr_img_all_r, num_list = sup.update_AC_bg_l2_Y(movVec[:, first_frame:last_frame].copy(),
-                                                                       normalize_factor, a, c, b, ff, fb, dims,
-                                                                       corr_th_fix=corr_th_fix,
-                                                                       maxiter=update_ac_maxiter,
-                                                                       tol=update_ac_tol,
-                                                                       merge_corr_thr=merge_corr_thr,
-                                                                       merge_overlap_thr=update_ac_merge_overlap_thr,
-                                                                       keep_shape=update_ac_keep_shape
-                                                                       )
-
-# plot all cell traces and footprints
-cell_ct = c.shape[1]
-
-plt.figure(figsize=(25, 3 * cell_ct))
-
-ref_im = np.std(movB, axis=2).transpose(1, 0)
-
-for cell_num in range(cell_ct):
-    plt.subplot(cell_ct, 2, 2 * cell_num + 1)
-    plt.plot(c[:, cell_num])
-    plt.title(cell_num, size=16)
-    plt.subplot(cell_ct, 2, 2 * cell_num + 2)
-    lower, upper = np.percentile(ref_im.flatten(), [1, 99])
-    plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
-    cell_loc = a[:, cell_num].reshape(movB.shape[1], movB.shape[0])
-    cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
-    plt.imshow(cell_loc, cmap='jet', alpha=0.5)
-    plt.colorbar()
-save_plot('Intermediate_Traces')
-
-# plot all background traces and footprints
-bg_rank = fb.shape[1]
-
-plt.figure(figsize=(25, 3 * bg_rank))
-
-for bkgd_num in range(bg_rank):
-    plt.subplot(bg_rank, 2, 2 * bkgd_num + 1)
-    plt.plot(ff[:, bkgd_num])
-
-    bkgd_comp = fb[:, bkgd_num].reshape(movB.shape[1::-1])
-    plt.subplot(bg_rank, 2, 2 * bkgd_num + 2)
-    plt.imshow(bkgd_comp)
-    plt.colorbar()
-save_plot('BG_Traces')
-
-if GUI:
-    ask_proceed()
+    return fb, ff
 
 
-# ## Choose Cells and Recover Temporal Correlation Structures
+def load_optopatch_stim(mov_b, data_path, plot_path):
+    # TODO: add edge trim and binning flag
+    trend = io.imread(data_path + '/trend.tif')
+    plt.imshow(np.mean(trend, axis=2))
+    plots.save_plot('Reloaded_Trend', plot_path, show=False)
+    trendB = trend.reshape(int(trend.shape[0] / 2), 2, int(trend.shape[1] / 2), 2, trend.shape[2])
+    trendB = np.mean(np.mean(trendB, axis=1), axis=2)
+    Y = (mov_b + trendB).transpose(1, 0, 2).reshape(mov_b.shape[0] * mov_b.shape[1], mov_b.shape[2])
+    print('Trend reloaded!')
+    return Y
 
 
-def tv_norm(image):
-    return np.sum(np.abs(image[:, :-1] - image[:, 1:])) + np.sum(np.abs(image[:-1, :] - image[1:, :]))
+def initialize_regression_params(mov_b, a, fb, n_cells):
+    Y = mov_b.transpose(1, 0, 2).reshape(mov_b.shape[0] * mov_b.shape[1], mov_b.shape[2])
+    X = np.hstack((a, fb))
+    X = X / np.ptp(X, axis=0)
+    X2 = np.zeros((X.shape[0], n_cells + bg_rank))
+    X2[:, :n_cells] = X[:, :n_cells]
+    return X, X2, Y
 
 
-Y = movB.transpose(1, 0, 2).reshape(movB.shape[0] * movB.shape[1], movB.shape[2])
-X = np.hstack((a, fb))
-X = X / np.ptp(X, axis=0)
-X2 = np.zeros((X.shape[0], nCells + bg_rank))
-X2[:, :nCells] = X[:, :nCells]
+def bg_regression(bg_rank, X, mov_b, n_cells, max_iters, lr, X2, path):
+    plt.figure(figsize=(25, 3 * bg_rank))
+    plt.suptitle('New Background Components')
+    for b in range(bg_rank):
+        bg_im = X[:, -(b + 1)].reshape(mov_b.shape[-2::-1])
+        plt.subplot(bg_rank, 2, (bg_rank - b) * 2 - 1)
+        plt.imshow(bg_im)
+        plt.title(str(tv_norm(bg_im)))
+        plt.colorbar()
+        weights = torch.zeros((n_cells,), requires_grad=True, dtype=torch.double)
+        image = torch.from_numpy(bg_im)
+        for idx in range(max_iters):
+            test_im = image - torch.reshape(torch.from_numpy(X[:, :n_cells]) @ weights, mov_b.shape[-2::-1])
+            tv = torch.sum(torch.abs(test_im[:, :-1] - test_im[:, 1:])) + torch.sum(
+                torch.abs(test_im[:-1, :] - test_im[1:, :]))
 
-plt.figure(figsize=(25, 3 * bg_rank))
-plt.suptitle('New Background Components')
+            tv.backward()
 
-lr = bg_reg_lr
-maxIters = bg_reg_max_iterations
+            with torch.no_grad():
+                weights -= lr * weights.grad
 
-for b in range(bg_rank):
-    bg_im = X[:, -(b + 1)].reshape(movB.shape[-2::-1])
+            weights.grad.zero_()
 
-    plt.subplot(bg_rank, 2, (bg_rank - b) * 2 - 1)
-    plt.imshow(bg_im)
-    plt.title(str(tv_norm(bg_im)))
-    plt.colorbar()
+        opt_weights = weights.data.numpy()
 
-    weights = torch.zeros((nCells,), requires_grad=True, dtype=torch.double)
+        X2[:, -(b + 1)] = np.maximum(X[:, -(b + 1)] - np.squeeze(X[:, :n_cells] @ opt_weights), 0)
 
-    image = torch.from_numpy(bg_im)
+        plt.subplot(bg_rank, 2, (bg_rank - b) * 2)
+        plt.imshow(X2[:, -(b + 1)].reshape(mov_b.shape[-2::-1]), vmin=0, vmax=1)
+        plt.title(str(tv_norm(X2[:, -(b + 1)].reshape(mov_b.shape[-2::-1]).T)))
+        plt.colorbar()
+    plots.save_plot(path, 'Temporal_Correlations', show=False)
 
-    for idx in range(maxIters):
-        test_im = image - torch.reshape(torch.from_numpy(X[:, :nCells]) @ weights, movB.shape[-2::-1])
-        tv = torch.sum(torch.abs(test_im[:, :-1] - test_im[:, 1:])) + torch.sum(
-            torch.abs(test_im[:-1, :] - test_im[1:, :]))
 
-        tv.backward()
+def find_optimal_traces(X2, Y):
+    beta_hat2 = np.linalg.lstsq(X2, Y)[0]
+    res = np.mean(np.square(Y - X2 @ beta_hat2), axis=0)
+    return beta_hat2, res
 
-        with torch.no_grad():
-            weights -= lr * weights.grad
 
-        weights.grad.zero_()
+def main(args):
+    print("Demixing Start")
+    print(str(args))
+    noise = np.squeeze(io.imread(output_path + '/Sn_image.tif'))
+    [nrows, ncols] = noise.shape
+    mov = load_movie(output_path)
+    print("Movie dimensions: " + str(mov.shape))
+    mov = add_blood_mask(mov, noise)
+    plots.plot_average(mov, 'Average', plot_path, show=False)
 
-    opt_weights = weights.data.numpy()
+    mov_b = bin_and_trim_movie(mov, binning_flag)
+    print("Binned and trimmed movie dimensions:" + str(mov_b.shape))
+    plots.plot_average(mov_b, "Average_Binned_Movie", plot_path, show=False)
 
-    X2[:, -(b + 1)] = np.maximum(X[:, -(b + 1)] - np.squeeze(X[:, :nCells] @ opt_weights), 0)
+    first_frame, last_frame = get_valid_window(mov_b, trunc_start, window_length)
+    bg_flag = os.path.isfile(output_path + '/ff.tif')
 
-    plt.subplot(bg_rank, 2, (bg_rank - b) * 2)
-    plt.imshow(X2[:, -(b + 1)].reshape(movB.shape[-2::-1]), vmin=0, vmax=1)
-    plt.title(str(tv_norm(X2[:, -(b + 1)].reshape(movB.shape[-2::-1]).T)))
-    plt.colorbar()
-save_plot('Temporal_Correlations')
+    start = time.time()
+    mov_hp = sup.hp_filt_data(mov_b, spacing=hp_spacing)
+    rlt = sup.axon_pipeline_Y(mov_hp[:, :, first_frame:last_frame].copy(), fb_ini=np.zeros(1), ff_ini=np.zeros(1),
 
-# ## Reload Trend (Skip if not using Optopatch Stim)
+                              ##### Superpixel parameters
+                              # thresholding level
+                              th=[th_lvl],
 
-if OPTOPATCH_STIM:
-    if GUI:
-        proc = input('Do you want to load a trend? (y/n) ')
+                              # correlation threshold for finding superpixels
+                              # (range around 0.8-0.99)
+                              cut_off_point=[cut_off_point],
+
+                              # minimum pixel count of a superpixel
+                              # don't need to change these unless cell sizes change
+                              length_cut=[int(patch_size_edge ** 2 / 5)],
+
+                              # maximum pixel count of a superpixel
+                              # don't need to change these unless cell sizes change
+                              length_max=[patch_size_edge ** 2 * 2],
+
+                              patch_size=[patch_size_edge, patch_size_edge],
+
+                              # correlation threshold between superpixels for merging
+                              # likely don't need to change this
+                              residual_cut=[residual_cut],
+
+                              pass_num=pass_num,
+
+                              bg=bg_mask,
+
+                              ##### Cell-finding, NMF parameters
+                              # correlation threshold of pixel with superpixel trace to include pixel in cell
+                              # (range 0.3-0.6)
+                              corr_th_fix=corr_th_fix,
+
+                              # correlation threshold for merging two cells
+                              # (default 0.8, but likely don't need to change)
+                              merge_corr_thr=merge_corr_thr,
+
+                              ##### Other options
+                              # if True, only superpixel analysis run; if False, NMF is also run to find cells
+                              sup_only=sup_only,
+
+                              # the number of superpixels to remove (starting from the dimmest)
+                              remove=remove_dimmest
+                              )
+
+    print("Finding the super pixels took: " + str(time.time() - start) + " sec")
+
+    ref_im = np.std(mov_b, axis=2).transpose(1, 0)
+    mov_dims = mov_b.shape[1::-1]
+
+    plots.plot_super_pixels(rlt, ref_im, "super_pixels", plot_path, show=False)
+    plots.plot_nmf_traces(rlt, ref_im, mov_dims, "NMF_Traces", plot_path, show=False)
+    # TODO: Add input from user for good / bad cells
+    final_cells = nmf_cells
+
+    n_cells = len(final_cells)
+
+    a = rlt["fin_rlt"]["a"][:, final_cells].copy()
+    c = rlt["fin_rlt"]["c"][:, final_cells].copy()
+    b = rlt["fin_rlt"]["b"].copy()
+
+    dims, movVec, normalize_factor = initialize_bg_parameters(mov_b, first_frame, last_frame)
+    if bg_flag:
+        fb_ini, ff_ini = load_bg_mask(mov, mov_b, output_path)
+        fb = fb_ini
+        ff = ff_ini[first_frame:last_frame, :]
+        bg_rank = fb.shape[1]
     else:
-        proc = 'y'
-    if proc.lower() == 'y':
-        trend = io.imread(PATH + '/trend.tif')
-        plt.imshow(np.mean(trend, axis=2))
-        save_plot('Reloaded_Trend')
-        trendB = trend.reshape(int(trend.shape[0] / 2), 2, int(trend.shape[1] / 2), 2, trend.shape[2])
-        trendB = np.mean(np.mean(trendB, axis=1), axis=2)
-        trendB.shape
+        fb, ff = initialize_bg(a, movVec, first_frame, last_frame)
 
-        Y = (movB + trendB).transpose(1, 0, 2).reshape(movB.shape[0] * movB.shape[1], movB.shape[2])
-        print('Trend reloaded!')
+    a, c, b, fb, ff, res, corr_img_all_r, num_list = sup.update_AC_bg_l2_Y(movVec[:, first_frame:last_frame].copy(),
+                                                                           normalize_factor, a, c, b, ff, fb, dims,
+                                                                           corr_th_fix=corr_th_fix,
+                                                                           maxiter=update_ac_maxiter,
+                                                                           tol=update_ac_tol,
+                                                                           merge_corr_thr=merge_corr_thr,
+                                                                           merge_overlap_thr=update_ac_merge_overlap_thr,
+                                                                           keep_shape=update_ac_keep_shape
+                                                                           )
 
-# ## Get Final Traces
+    plots.plot_intermediate_traces(a, c, ref_im, mov_dims, "Intermediate_Traces", plot_path, show=False)
+    plots.plot_bg_traces(fb, ff, mov_dims, "BG_Traces", plot_path, show=False)
+
+    X, X2, Y = initialize_regression_params(mov_b, a, fb, n_cells)
+
+    bg_regression(bg_rank, X, mov_b, n_cells, bg_reg_max_iterations, bg_reg_lr, X2, plot_path)
+
+    if optopatch_stim:
+        load_optopatch_stim(mov_b, data_path, plot_path)
+
+    beta_hat2, res = find_optimal_traces(X2, Y)
+
+    plots.plot_final_traces(beta_hat2, ref_im, mov_dims, "Traces", show=False)
+    save_outputs(plot_path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dims)
 
 
-beta_hat2 = np.linalg.lstsq(X2, Y)[0]
-res = np.mean(np.square(Y - X2 @ beta_hat2), axis=0)
-
-# ## Visualizations
-
-
-num_traces = beta_hat2.shape[0]
-plt.figure(figsize=(25, 3 * num_traces))
-ref_im = np.std(movB, axis=2).transpose(1, 0)
-
-for idx in range(num_traces):
-    plt.subplot(num_traces, 2, 2 * idx + 1)
-    plt.plot(beta_hat2[idx, :])
-
-    plt.subplot(num_traces, 2, 2 * idx + 2)
-    lower, upper = np.percentile(ref_im.flatten(), [1, 99])
-    plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
-
-    cell_loc = X2[:, idx].reshape(movB.shape[1::-1])  # .transpose(1,0)
-    cell_loc = np.ma.masked_where(abs(cell_loc) < 1e-8, cell_loc)
-    plt.imshow(cell_loc, cmap='jet', alpha=0.5)
-save_plot('Traces')
-
-# ## Save Results
-
-if GUI:
-    ask_proceed()
-
-suffix = ''
-files_to_remove = ['spatial_footprints', 'cell_spatial_footprints', 'temporal_traces', 'cell_traces',
-                   'residual_var', 'ref_im', 'rlt', 'ref']
-for file in files_to_remove:
-    full_path = PLOT_PATH + "/" + file + suffix + '.tif'
-    if os.path.exists(full_path):
-        os.remove(full_path)
-io.imsave(PLOT_PATH + '/spatial_footprints' + suffix + '.tif', X2)
-io.imsave(PLOT_PATH + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :nCells])
-io.imsave(PLOT_PATH + '/temporal_traces' + suffix + '.tif', beta_hat2)
-io.imsave(PLOT_PATH + '/cell_traces' + suffix + '.tif', beta_hat2[:nCells, :])
-io.imsave(PLOT_PATH + '/residual_var' + suffix + '.tif', res)
-io.imsave(PLOT_PATH + '/ref_im' + suffix + '.tif', ref_im)
-with open(PLOT_PATH + '/rlt' + suffix + '.tif', 'wb') as f:
-    pickle.dump(rlt, f)
-with open(PLOT_PATH + '/ref' + suffix + '.tif', 'wb') as f:
-    pickle.dump([movB.shape[1::-1], ref_im], f)
-cell_locations = center_of_mass(X2[:, 0].reshape(movB.shape[1::-1]).transpose(1, 0))
-for idx in range(nCells - 1):
-    cell_locations = np.vstack((cell_locations,
-                                center_of_mass(X2[:, idx + 1].reshape(movB.shape[1::-1]).transpose(1, 0))))
-io.imsave(PATH + '/cell_locations' + suffix + '.tif', np.array(cell_locations))
-if nCells > 1:
-    io.imsave(PATH + '/cell_demixing_matrix' + suffix + '.tif',
-              np.linalg.inv(np.array(X2[:, :nCells].T @ X2[:, :nCells])) @ X2[:, :nCells].T)
-
-print('Data files saved!')
+if __name__ == "__main__":
+    main(sys.argv)

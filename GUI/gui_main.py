@@ -13,6 +13,7 @@ import pickle
 from pickle import UnpicklingError
 import re
 import webbrowser
+from demix import plots
 
 VERSION = 1.2
 IM_SIZE = (800, 600)
@@ -86,38 +87,12 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
     voltage_full = os.path.join(plot_dir, voltage_file)
     footprint_full = os.path.join(plot_dir, footprint_file)
     ref_full = os.path.join(plot_dir, ref_file)
-
     if os.path.exists(voltage_full) and os.path.exists(ref_full) and os.path.exists(footprint_full):
         beta_hat2 = skio.imread(voltage_full)
         X2 = skio.imread(footprint_full)
         with open(ref_full, 'rb') as f:
             mov_dims, ref_im = pickle.load(f)
-        num_traces = beta_hat2.shape[0]
-        plt.figure(figsize=(25, 3 * num_traces))
-        for idx in range(num_traces):
-            plt.subplot(num_traces, 2, 2 * idx + 1)
-            plt.plot(beta_hat2[idx, :])
-            plt.subplot(num_traces, 2, 2 * idx + 2)
-            lower, upper = np.percentile(ref_im.flatten(), [1, 99])
-            plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
-            cell_loc = X2[:, idx].reshape(mov_dims)
-            cell_loc = np.ma.masked_where(abs(cell_loc) < 1e-8, cell_loc)
-            plt.imshow(cell_loc, cmap='jet', alpha=0.5)
-        """
-        traces = skio.imread(voltage_full)
-        elem_num, frame_num = traces.shape
-        sample_frequency = float(values['sample_freq'])
-        t = np.linspace(0, frame_num/sample_frequency, frame_num)#.reshape((1, frame_num))
-        fig, axs = plt.subplots(elem_num, sharex=True, gridspec_kw={'hspace': 0.1}, squeeze=False)
-        fig.suptitle('Temporal traces')
-        for i in range(elem_num):
-            multiplier = 5
-            voltage = traces[i, :]
-            max_v = max(np.abs(voltage)) * multiplier
-            axs[i, 0].plot(t, voltage, linewidth=0.7)
-            axs[i, 0].set_ylim(-max_v, max_v)
-        """
-        plt.show()
+        plots.plot_final_traces(beta_hat2, ref_im, mov_dims,X2, "Traces", plot_dir)
     else:
         sg.Popup(PLOT_FAIL_POPUP)
 
@@ -131,42 +106,7 @@ def plot_super_pixels(values, rlt_file, ref_file):
             mov_dims, ref_im = pickle.load(f)
         with open(rlt_full, 'rb') as f:
             rlt = pickle.load(f)
-        num_pass = len(rlt["superpixel_rlt"])
-        scale = np.maximum(1, (
-                rlt["superpixel_rlt"][0]["connect_mat_1"].shape[1] / rlt["superpixel_rlt"][0]["connect_mat_1"].shape[0]))
-        plt.figure(figsize=(10 * scale * num_pass, 10))
-
-        plt.subplot(1, num_pass + 2, 1)
-        plt.imshow(ref_im.transpose(1, 0))
-        for p in range(num_pass):
-            connect_mat_1 = rlt["superpixel_rlt"][p]["connect_mat_1"]
-            pure_pix = rlt["superpixel_rlt"][p]["pure_pix"]
-            brightness_rank = rlt["superpixel_rlt"][p]["brightness_rank"]
-            ax1 = plt.subplot(1, num_pass + 2, p + 2)
-            dims = connect_mat_1.shape
-            connect_mat_1_pure = connect_mat_1.copy()
-            connect_mat_1_pure = connect_mat_1_pure.reshape(np.prod(dims), order="F")
-            connect_mat_1_pure[~np.in1d(connect_mat_1_pure, pure_pix)] = 0
-            connect_mat_1_pure = connect_mat_1_pure.reshape(dims, order="F")
-
-            ax1.imshow(connect_mat_1_pure, cmap="nipy_spectral_r")
-
-            for ii in range(len(pure_pix)):
-                pos = np.where(connect_mat_1_pure[:, :] == pure_pix[ii])
-                pos0 = pos[0]
-                pos1 = pos[1]
-                """ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
-                         verticalalignment='bottom', horizontalalignment='right', color='black',
-                         fontsize=15)"""
-                ax1.text((pos1)[np.array(len(pos1) / 3, dtype=int)], (pos0)[np.array(len(pos0) / 3, dtype=int)],
-                         f"{brightness_rank[ii] + 1}",
-                         verticalalignment='bottom', horizontalalignment='right', color='black',
-                         fontsize=15)
-
-            ax1.set(title="pass " + str(p + 1))
-            ax1.title.set_fontsize(15)
-            ax1.title.set_fontweight("bold")
-        plt.show()
+        plots.plot_super_pixels(rlt, ref_im, "super_pixels", plot_dir)
     else:
         sg.Popup(PLOT_FAIL_POPUP)
 
@@ -180,22 +120,7 @@ def plot_nmf_traces(values, rlt_file, ref_file):
             mov_dims, ref_im = pickle.load(f)
         with open(rlt_full, 'rb') as f:
             rlt = pickle.load(f)
-        ref_im = ref_im.transpose(1, 0)
-        cell_ct = rlt["fin_rlt"]["c"].shape[1]
-        plt.figure(figsize=(25, 3 * cell_ct))
-        for cell_num in range(cell_ct):
-            plt.subplot(cell_ct, 2, 2 * cell_num + 1)
-            plt.plot(rlt["fin_rlt"]["c"][:, cell_num])
-            plt.title(cell_num, size=24)
-
-            plt.subplot(cell_ct, 2, 2 * cell_num + 2)
-            lower, upper = np.percentile(ref_im.flatten(), [1, 99])
-            plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
-
-            cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[0], mov_dims[1]).transpose(1, 0)
-            cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
-            plt.imshow(cell_loc, cmap='jet', alpha=0.5)
-        plt.show()
+        plots.plot_nmf_traces(rlt, ref_im, mov_dims, "NMF_Traces", plot_dir)
     else:
         sg.Popup(PLOT_FAIL_POPUP)
 
