@@ -235,7 +235,7 @@ def bg_regression(bg_rank, X, mov_b, n_cells, max_iters, lr, X2, path):
         plt.imshow(X2[:, -(b + 1)].reshape(mov_b.shape[-2::-1]), vmin=0, vmax=1)
         plt.title(str(tv_norm(X2[:, -(b + 1)].reshape(mov_b.shape[-2::-1]).T)))
         plt.colorbar()
-    plots.save_plot(path, 'Temporal_Correlations', show=False)
+    plots.save_plot('Temporal_Correlations', path, show=False)
 
 
 def find_optimal_traces(X2, Y):

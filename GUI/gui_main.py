@@ -425,7 +425,7 @@ def main():
         [sg.Multiline(size=(110, 30), font='courier 10', background_color='black', text_color='white',
                       key='logs_mline', auto_refresh=True, autoscroll=True)],
         [sg.T('Job ID:'), sg.Input(key='logs_job_id')],
-        [sg.Button('Load', key='logs_load', enable_events=True, bind_return_key=True),
+        [sg.Button('Load/Refresh', key='logs_load', enable_events=True, bind_return_key=True),
          sg.Button('Clear', key='logs_clear', enable_events=True)]
     ]
 
