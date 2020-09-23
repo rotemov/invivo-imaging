@@ -19,7 +19,7 @@ data_path = str(sys.argv[1])
 cut_off_point = float(sys.argv[2])
 corr_th_fix = float(sys.argv[3])
 patch_size_edge = int(sys.argv[4])
-bg_rank = int(float(sys.argv[5]))
+default_bg_rank = int(float(sys.argv[5]))
 trunc_start = int(sys.argv[6])
 window_length = int(sys.argv[7])
 th_lvl = int(sys.argv[8])
@@ -171,7 +171,7 @@ def initialize_bg_parameters(mov_b, first_frame, last_frame):
     return dims, movVec, normalize_factor
 
 
-def initialize_bg(a, movVec, first_frame, last_frame):
+def initialize_bg(a, movVec, first_frame, last_frame, bg_rank):
     bg_comp_pos = np.where(a.sum(axis=1) == 0)[0]
     y_temp = movVec[bg_comp_pos, first_frame:last_frame]
     fb = np.zeros([movVec.shape[0], bg_rank])
@@ -195,7 +195,7 @@ def load_optopatch_stim(mov_b, data_path, plot_path):
     return Y
 
 
-def initialize_regression_params(mov_b, a, fb, n_cells):
+def initialize_regression_params(mov_b, a, fb, n_cells, bg_rank):
     Y = mov_b.transpose(1, 0, 2).reshape(mov_b.shape[0] * mov_b.shape[1], mov_b.shape[2])
     X = np.hstack((a, fb))
     X = X / np.ptp(X, axis=0)
@@ -331,7 +331,8 @@ def main(args):
         ff = ff_ini[first_frame:last_frame, :]
         bg_rank = fb.shape[1]
     else:
-        fb, ff = initialize_bg(a, movVec, first_frame, last_frame)
+        bg_rank = default_bg_rank
+        fb, ff = initialize_bg(a, movVec, first_frame, last_frame, bg_rank)
 
     a, c, b, fb, ff, res, corr_img_all_r, num_list = sup.update_AC_bg_l2_Y(movVec[:, first_frame:last_frame].copy(),
                                                                            normalize_factor, a, c, b, ff, fb, dims,
@@ -346,7 +347,7 @@ def main(args):
     plots.plot_intermediate_traces(a, c, ref_im, mov_dims, "Intermediate_Traces", plot_path, show=False)
     plots.plot_bg_traces(fb, ff, mov_dims, "BG_Traces", plot_path, show=False)
 
-    X, X2, Y = initialize_regression_params(mov_b, a, fb, n_cells)
+    X, X2, Y = initialize_regression_params(mov_b, a, fb, n_cells, bg_rank)
 
     bg_regression(bg_rank, X, mov_b, n_cells, bg_reg_max_iterations, bg_reg_lr, X2, plot_path)
 
