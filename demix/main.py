@@ -41,7 +41,16 @@ edge_trim = int(float(sys.argv[23]))
 binning_flag = bool(int(sys.argv[24]))
 nmf_cells = [int(idx) for idx in list(sys.argv[25])]
 output_path = sys.argv[26]
+
+calculate_traces_flag = bool(int(sys.argv[27]))
+find_rois_flag = bool(int(sys.argv[28]))
+
 plot_path = output_path + '/plots/'
+
+
+NO_RLT_FILE_MSG = "rlt.tif could not be found. Please check that the correct output directory was selected and that " \
+                  "you have already found the ROIs."
+
 
 # TODO: add as params
 suffix = ''
@@ -149,8 +158,6 @@ def save_outputs(path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dim
     io.imsave(path + '/cell_traces' + suffix + '.tif', beta_hat2[:n_cells, :])
     io.imsave(path + '/residual_var' + suffix + '.tif', res)
     io.imsave(path + '/ref_im' + suffix + '.tif', ref_im)
-    with open(path + '/rlt' + suffix + '.tif', 'wb') as f:
-        pickle.dump(rlt, f)
     with open(path + '/ref' + suffix + '.tif', 'wb') as f:
         pickle.dump([mov_dims, ref_im], f)
     io.imsave(path + '/cell_locations' + suffix + '.tif', np.array(get_cell_locations(X2, n_cells, mov_dims)))
@@ -244,23 +251,7 @@ def find_optimal_traces(X2, Y):
     return beta_hat2, res
 
 
-def main(args):
-    print("Demixing Start")
-    print(str(args))
-    noise = np.squeeze(io.imread(output_path + '/Sn_image.tif'))
-    [nrows, ncols] = noise.shape
-    mov = load_movie(output_path)
-    print("Movie dimensions: " + str(mov.shape))
-    mov = add_blood_mask(mov, noise)
-    plots.plot_average(mov, 'Average', plot_path, show=False)
-
-    mov_b = bin_and_trim_movie(mov, binning_flag)
-    print("Binned and trimmed movie dimensions:" + str(mov_b.shape))
-    plots.plot_average(mov_b, "Average_Binned_Movie", plot_path, show=False)
-
-    first_frame, last_frame = get_valid_window(mov_b, trunc_start, window_length)
-    bg_flag = os.path.isfile(output_path + '/ff.tif')
-
+def find_rois(mov_b, first_frame, last_frame, ref_im, mov_dims, path):
     start = time.time()
     mov_hp = sup.hp_filt_data(mov_b, spacing=hp_spacing)
     rlt = sup.axon_pipeline_Y(mov_hp[:, :, first_frame:last_frame].copy(), fb_ini=np.zeros(1), ff_ini=np.zeros(1),
@@ -310,12 +301,16 @@ def main(args):
 
     print("Finding the super pixels took: " + str(time.time() - start) + " sec")
 
-    ref_im = np.std(mov_b, axis=2).transpose(1, 0)
-    mov_dims = mov_b.shape[1::-1]
+    plots.plot_super_pixels(rlt, ref_im, "super_pixels", path, show=False)
+    plots.plot_nmf_traces(rlt, ref_im, mov_dims, "NMF_Traces", path, show=False)
 
-    plots.plot_super_pixels(rlt, ref_im, "super_pixels", plot_path, show=False)
-    plots.plot_nmf_traces(rlt, ref_im, mov_dims, "NMF_Traces", plot_path, show=False)
-    # TODO: Add input from user for good / bad cells
+    with open(path + '/rlt' + suffix + '.tif', 'wb') as f:
+        pickle.dump(rlt, f)
+
+    return rlt
+
+
+def calculate_traces(rlt, mov_b, bg_flag, first_frame, last_frame, mov, ref_im, mov_dims):
     final_cells = nmf_cells
 
     n_cells = len(final_cells)
@@ -360,5 +355,42 @@ def main(args):
     save_outputs(plot_path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dims)
 
 
+def _initialize_params():
+    noise = np.squeeze(io.imread(output_path + '/Sn_image.tif'))
+    mov = load_movie(output_path)
+    print("Movie dimensions: " + str(mov.shape))
+    mov = add_blood_mask(mov, noise)
+    plots.plot_average(mov, 'Average', plot_path, show=False)
+    mov_b = bin_and_trim_movie(mov, binning_flag)
+    print("Binned and trimmed movie dimensions:" + str(mov_b.shape))
+    plots.plot_average(mov_b, "Average_Binned_Movie", plot_path, show=False)
+    first_frame, last_frame = get_valid_window(mov_b, trunc_start, window_length)
+    bg_flag = os.path.isfile(output_path + '/ff.tif')
+    ref_im = np.std(mov_b, axis=2).transpose(1, 0)
+    mov_dims = mov_b.shape[1::-1]
+    return noise, mov, mov_b, first_frame, last_frame, bg_flag, ref_im, mov_dims
+
+
+def main():
+
+    noise, mov, mov_b, first_frame, last_frame, bg_flag, ref_im, mov_dims = _initialize_params()
+
+    if find_rois_flag:
+        rlt = find_rois(mov_b, first_frame, last_frame, ref_im, mov_dims, plot_path)
+
+    elif calculate_traces_flag:
+        rlt_path = plot_path + "rlt.tif"
+        if os.path.isfile(rlt_path):
+            with open(rlt_path, 'rb') as f:
+                rlt = pickle.load(f)
+        else:
+            raise FileNotFoundError(NO_RLT_FILE_MSG)
+
+    if calculate_traces_flag:
+        calculate_traces(rlt, mov_b, bg_flag, first_frame, last_frame, mov, ref_im, mov_dims)
+
+
 if __name__ == "__main__":
-    main(sys.argv)
+    print("Demixing Start")
+    print(str(sys.argv))
+    main()

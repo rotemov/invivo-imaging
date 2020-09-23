@@ -5,8 +5,6 @@ from PIL import Image
 import io
 import base64
 from skimage import io as skio
-import numpy as np
-from matplotlib import pyplot as plt
 import subprocess
 from subprocess import CalledProcessError
 import pickle
