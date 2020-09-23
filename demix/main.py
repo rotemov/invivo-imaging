@@ -356,7 +356,7 @@ def main(args):
 
     beta_hat2, res = find_optimal_traces(X2, Y)
 
-    plots.plot_final_traces(beta_hat2, ref_im, mov_dims, "Traces", show=False)
+    plots.plot_final_traces(beta_hat2, ref_im, mov_dims, X2, "Traces", plot_path, show=False)
     save_outputs(plot_path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dims)
 
 
