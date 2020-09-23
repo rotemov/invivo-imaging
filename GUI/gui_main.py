@@ -13,7 +13,7 @@ import pickle
 from pickle import UnpicklingError
 import re
 import webbrowser
-from demix import plots
+from demix import demixing_plots
 
 VERSION = 1.2
 IM_SIZE = (800, 600)
@@ -92,7 +92,7 @@ def open_traces_plot(values, voltage_file, footprint_file, ref_file):
         X2 = skio.imread(footprint_full)
         with open(ref_full, 'rb') as f:
             mov_dims, ref_im = pickle.load(f)
-        plots.plot_final_traces(beta_hat2, ref_im, mov_dims,X2, "Traces", plot_dir)
+        demixing_plots.plot_final_traces(beta_hat2, ref_im, mov_dims, X2, "Traces", plot_dir)
     else:
         sg.Popup(PLOT_FAIL_POPUP)
 
@@ -106,7 +106,7 @@ def plot_super_pixels(values, rlt_file, ref_file):
             mov_dims, ref_im = pickle.load(f)
         with open(rlt_full, 'rb') as f:
             rlt = pickle.load(f)
-        plots.plot_super_pixels(rlt, ref_im, "super_pixels", plot_dir)
+        demixing_plots.plot_super_pixels(rlt, ref_im, "super_pixels", plot_dir)
     else:
         sg.Popup(PLOT_FAIL_POPUP)
 
@@ -120,7 +120,7 @@ def plot_nmf_traces(values, rlt_file, ref_file):
             mov_dims, ref_im = pickle.load(f)
         with open(rlt_full, 'rb') as f:
             rlt = pickle.load(f)
-        plots.plot_nmf_traces(rlt, ref_im, mov_dims, "NMF_Traces", plot_dir)
+        demixing_plots.plot_nmf_traces(rlt, ref_im, mov_dims, "NMF_Traces", plot_dir)
     else:
         sg.Popup(PLOT_FAIL_POPUP)
 
