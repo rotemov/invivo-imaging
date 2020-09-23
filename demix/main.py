@@ -11,7 +11,7 @@ import scipy.io
 import util_plot
 import pickle
 from datetime import datetime
-from demix import plots
+from . import plots
 
 # TODO: addd arg parser
 sys.path.append(os.getcwd())
