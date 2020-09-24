@@ -3,11 +3,8 @@ import numpy as np
 from _datetime import datetime
 
 DATE_TIME_FORMAT = "%d%m%Y_%H%M%S"
-LINE_WIDTH = 0.5
+LINE_WIDTH = 0.3
 TRACES_X_LABEL = "frames"
-
-# TODO: decrease line width
-# TODO: Transpose NMF
 
 
 def get_time_stamp():
@@ -80,7 +77,7 @@ def plot_nmf_traces(rlt, ref_im, mov_dims, name, path, show=True):
         lower, upper = np.percentile(ref_im.flatten(), [1, 99])
         plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
 
-        cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[1], mov_dims[0])
+        cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[0], mov_dims[1])
         cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
         plt.imshow(cell_loc, cmap='jet', alpha=0.5)
     save_plot(name, path, show)

@@ -57,9 +57,7 @@ suffix = ''
 optopatch_stim = False
 
 
-def remove_previous_outputs(path, suffix):
-    files_to_remove = ['spatial_footprints', 'cell_spatial_footprints', 'temporal_traces', 'cell_traces',
-                       'residual_var', 'ref_im', 'rlt', 'ref']
+def remove_previous_outputs(path, suffix, files_to_remove)
     for file in files_to_remove:
         full_path = path + "/" + file + suffix + '.tif'
         if os.path.exists(full_path):
@@ -150,21 +148,29 @@ def get_cell_demixing_matrix(X2, n_cells):
     return np.linalg.inv(np.array(X2[:, :n_cells].T @ X2[:, :n_cells])) @ X2[:, :n_cells].T
 
 
-def save_outputs(path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dims):
-    remove_previous_outputs(path, suffix)
+def save_outputs_optimize_traces(path, suffix, X2, n_cells, beta_hat2, res, mov_dims):
+    files_to_remove = ['spatial_footprints', 'cell_spatial_footprints', 'temporal_traces', 'cell_traces',
+                       'residual_var',]
+    remove_previous_outputs(path, suffix, files_to_remove)
     io.imsave(path + '/spatial_footprints' + suffix + '.tif', X2)
     io.imsave(path + '/cell_spatial_footprints' + suffix + '.tif', X2[:, :n_cells])
     io.imsave(path + '/temporal_traces' + suffix + '.tif', beta_hat2)
     io.imsave(path + '/cell_traces' + suffix + '.tif', beta_hat2[:n_cells, :])
     io.imsave(path + '/residual_var' + suffix + '.tif', res)
+
+    io.imsave(path + '/cell_locations' + suffix + '.tif', np.array(get_cell_locations(X2, n_cells, mov_dims)))
+    if n_cells > 1:
+        io.imsave(path + '/cell_demixing_matrix' + suffix + '.tif', get_cell_demixing_matrix(X2, n_cells))
+    print('Optimize traces files saved!')
+
+
+def save_outputs_find_rois(path, suffix, ref_im, rlt, mov_dims):
+    files_to_remove = [' rlt', 'ref']
+    remove_previous_outputs(path, suffix, files_to_remove)
     with open(path + '/ref' + suffix + '.tif', 'wb') as f:
         pickle.dump([mov_dims, ref_im], f)
     with open(path + '/rlt' + suffix + '.tif', 'wb') as f:
         pickle.dump(rlt, f)
-    io.imsave(path + '/cell_locations' + suffix + '.tif', np.array(get_cell_locations(X2, n_cells, mov_dims)))
-    if n_cells > 1:
-        io.imsave(path + '/cell_demixing_matrix' + suffix + '.tif', get_cell_demixing_matrix(X2, n_cells))
-    print('Data files saved!')
 
 
 def initialize_bg_parameters(mov_b, first_frame, last_frame):
@@ -192,7 +198,6 @@ def initialize_bg(a, movVec, first_frame, last_frame, bg_rank):
 
 
 def load_optopatch_stim(mov_b, data_path, plot_path):
-    # TODO: add edge trim and binning flag
     trend = io.imread(data_path + '/trend.tif')
     plt.imshow(np.mean(trend, axis=2))
     plots.save_plot('Reloaded_Trend', plot_path, show=False)
@@ -305,9 +310,7 @@ def find_rois(mov_b, first_frame, last_frame, ref_im, mov_dims, path):
     plots.plot_super_pixels(rlt, ref_im, "super_pixels", path, show=False)
     plots.plot_nmf_traces(rlt, ref_im, mov_dims, "NMF_Traces", path, show=False)
 
-    with open(path + '/rlt' + suffix + '.tif', 'wb') as f:
-        pickle.dump(rlt, f)
-
+    save_outputs_find_rois(path, suffix, ref_im, rlt, mov_dims)
     return rlt
 
 
@@ -353,7 +356,7 @@ def calculate_traces(rlt, mov_b, bg_flag, first_frame, last_frame, mov, ref_im, 
     beta_hat2, res = find_optimal_traces(X2, Y)
 
     plots.plot_final_traces(beta_hat2, ref_im, mov_dims, X2, "Traces", plot_path, show=False)
-    save_outputs(plot_path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dims)
+    save_outputs_optimize_traces(plot_path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dims)
 
 
 def _initialize_params():

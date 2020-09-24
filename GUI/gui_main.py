@@ -13,7 +13,6 @@ import re
 import webbrowser
 from demix import demixing_plots
 
-# TODO: solve nmf flag issue when loading.
 
 VERSION = 1.2
 IM_SIZE = (800, 600)
@@ -486,6 +485,7 @@ def main():
             enable_nmf_checkboxes(nmf_trace_checkboxes, int(values['nmf_num_elements']))
         if event == 'Load params':
             load_params_from_file(window, values)
+            # TODO: solve nmf flag issue when loading.
         if event == 'logs_load':
             print_logs(window, values)
         if event == 'Clear':
