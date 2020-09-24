@@ -41,7 +41,6 @@ PLOT_FAIL_POPUP = "The file {} was not found or is corrupt.\nThe job might be st
 TUTORIAL_LINK = 'https://github.com/rotemov/invivo-imaging'
 
 
-
 def convert_to_bytes(file_or_bytes, resize=None):
     '''
     Will convert into bytes and optionally resize an image that is a file or a base64 bytes object.
