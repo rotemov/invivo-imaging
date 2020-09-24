@@ -14,7 +14,7 @@ import webbrowser
 from demix import demixing_plots
 
 
-VERSION = 1.2
+VERSION = 1.3
 IM_SIZE = (800, 600)
 POPUP_SIZE = (200, 400)
 sg.theme('Reddit')
