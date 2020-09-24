@@ -5,8 +5,6 @@ from PIL import Image
 import io
 import base64
 from skimage import io as skio
-import numpy as np
-from matplotlib import pyplot as plt
 import subprocess
 from subprocess import CalledProcessError
 import pickle
@@ -43,6 +41,7 @@ PLOT_FAIL_POPUP = "The file {} was not found or is corrupt.\nThe job might be st
 TUTORIAL_LINK = 'https://github.com/rotemov/invivo-imaging'
 
 
+
 def convert_to_bytes(file_or_bytes, resize=None):
     '''
     Will convert into bytes and optionally resize an image that is a file or a base64 bytes object.
@@ -77,9 +76,9 @@ def load_picture_on_canvas(values, graph, im_name):
             graph.delete_figure("all")
             graph.draw_image(data=im_bin, location=(0, IM_SIZE[1]))
         except PIL.UnidentifiedImageError as e:
-            sg.Popup(PLOT_FAIL_POPUP.format(im_name, str(e)))
+            raise FileNotFoundError(PLOT_FAIL_POPUP.format(im_name, str(e)))
     else:
-        sg.Popup(PLOT_FAIL_POPUP.format(im_name, "FileNotFoundError"))
+        raise FileNotFoundError(LOAD_TO_CANVAS_ERROR_FORMAT.format(im_name))
 
 
 def open_traces_plot(values, voltage_file, footprint_file, ref_file):
@@ -450,6 +449,7 @@ def main():
     window = sg.Window('Invivo imaging - Adam Lab - ver' + str(VERSION), layout, no_titlebar=False)
 
     while True:
+        fig_num = 1
         event, values = window.read()
         if event == sg.WIN_CLOSED or event == 'Quit':
             break
@@ -459,19 +459,23 @@ def main():
             window['logs_job_id'].update(str(last_job))
         if event == 'Help':
             webbrowser.open_new(TUTORIAL_LINK)
-        if event == 'Load outputs':
-            load_picture_on_canvas(values, nmf_traces_graph, 'NMF_Traces.png')
-            load_picture_on_canvas(values, super_pixels_graph, 'super_pixels.png')
-            load_picture_on_canvas(values, final_traces_graph, 'Traces.png')
-            load_picture_on_canvas(values, other_plots_graph, 'Average.png')
-        if event == 'Average':
-            load_picture_on_canvas(values, other_plots_graph, 'Average.png')
-        if event == 'Intermediate Traces':
-            load_picture_on_canvas(values, other_plots_graph, 'Intermediate_Traces.png')
-        if event == 'Background Traces':
-            load_picture_on_canvas(values, other_plots_graph, 'BG_Traces.png')
-        if event == 'Temporal Correlations':
-            load_picture_on_canvas(values, other_plots_graph, 'Temporal_Correlations.png')
+        try:
+            if event == 'Load outputs':
+
+                load_picture_on_canvas(values, nmf_traces_graph, 'NMF_Traces.png')
+                load_picture_on_canvas(values, super_pixels_graph, 'super_pixels.png')
+                load_picture_on_canvas(values, final_traces_graph, 'Traces.png')
+                load_picture_on_canvas(values, other_plots_graph, 'Average.png')
+            if event == 'Average':
+                load_picture_on_canvas(values, other_plots_graph, 'Average.png')
+            if event == 'Intermediate Traces':
+                load_picture_on_canvas(values, other_plots_graph, 'Intermediate_Traces.png')
+            if event == 'Background Traces':
+                load_picture_on_canvas(values, other_plots_graph, 'BG_Traces.png')
+            if event == 'Temporal Correlations':
+                load_picture_on_canvas(values, other_plots_graph, 'Temporal_Correlations.png')
+        except (FileNotFoundError, PIL.UnidentifiedImageError) as e:
+            sg.Popup(str(e))
         if event == 'final_traces_zoom':
             open_traces_plot(values, 'temporal_traces.tif', 'spatial_footprints.tif', 'ref.tif')
         if event == 'NMF_traces_zoom':
