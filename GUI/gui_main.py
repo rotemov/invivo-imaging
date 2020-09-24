@@ -21,7 +21,7 @@ CHECK_BOX_SIZE = (25, 1)
 INPUT_SIZE = (10, 1)
 LABEL_SIZE = (25, 1)
 SLIDER_SIZE = (34, 20)
-NUM_PARAMS = 39
+NUM_PARAMS = 40
 DATETIME_FORMAT = "%d%m%Y_%H%M%S"
 NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 'max_size',
                   'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
@@ -29,7 +29,7 @@ NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 
                   'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
                   'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length', 'job_id',
                   'job_to_cancel', 'edge_trim']
-DIR_PARAMS_IDX = [1, 13, 38]
+DIR_PARAMS_IDX = [1, 13, 39]
 MAX_NMF_ELEMENTS = 15
 FREQ_TO_HP_SPACING = 100
 LOAD_PARAMS_DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plots_graph', '-TABGROUP-',
@@ -147,7 +147,7 @@ def get_args_array(values):
     args[3] = values['normcorre']
     args[4] = values['detrend']
     args[5] = values['moco']
-    args[6] = values['demix']
+    args[6] = values['find_rois']
     args[7] = values['cut_off_point'] / 100
     args[8] = values['corr_th_fix'] / 100
     args[9] = values['patch_size_edge']
@@ -176,12 +176,11 @@ def get_args_array(values):
     args[32] = values['demix_length']
     args[33] = values['demix_all_frame_flag']
     args[34] = int(int(values['sample_freq']) / FREQ_TO_HP_SPACING)
-
     args[35] = values['edge_trim']
     args[36] = values['binning_flag']
-
-    args[37] = parse_nmf_checkboxes(values)
-    args[38] = values['stim_dir']
+    args[37] = values['optimize_traces']
+    args[38] = parse_nmf_checkboxes(values)
+    args[39] = values['stim_dir']
 
     if values['network_drive_flag']:
         for idx in DIR_PARAMS_IDX:
@@ -309,7 +308,10 @@ def main():
         [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre")],
         [sg.Checkbox('Detrending', size=CHECK_BOX_SIZE, default=True, key="detrend")],
         [sg.Checkbox('Motion correction', size=CHECK_BOX_SIZE, default=True, key="moco")],
-        [sg.Checkbox('Demixing', size=CHECK_BOX_SIZE, default=True, key="demix")],
+
+        [sg.Checkbox('Find ROIs', size=CHECK_BOX_SIZE, default=True, key="find_rois")],
+        [sg.Checkbox('Optimize Traces', size=CHECK_BOX_SIZE, default=True, key="optimize_traces")],
+
         [sg.Checkbox('Quick run', size=CHECK_BOX_SIZE, default=False, key="sup_only")],
         [sg.Text('Cut off point %', size=LABEL_SIZE),
          sg.Slider(range=(80, 99), orientation='h', size=SLIDER_SIZE, key='cut_off_point', default_value=90)],

@@ -11,10 +11,10 @@
 # Parsing input args into variables
 DATA=${1:-"/ems/elsc-labs/adam-y/rotem.ovadia/Programs/invivo-imaging/Data/two_cells/cell1"}
 FN=${2:-"cell1.bin"}
-NORMCORRE=${3:-"YES"}
-DETREND=${4:-"YES"}
-MOCO=${5:-"YES"}
-DEMIX=${6:-"YES"}
+NORMCORRE=${3:-"1"}
+DETREND=${4:-"1"}
+MOCO=${5:-"1"}
+FIND_ROIS=${6:-"1"}
 CUTOFF_POINT=${7:-"0.9"}
 CORR_TH_FIX=${8:-'0.3'}
 PATCH_SIZE=${9:-'175'}
@@ -39,14 +39,15 @@ UPDATE_AC_TOL=${27:-"1e-8"}
 UPDATE_AC_MERGE_OVERLAP_THR=${28:-"0.8"}
 BG_REG_MAX_ITER=${29:-"1000"}
 BG_REG_LR=${30:-"0.001"}
-DEMIX_START=${31:-"1"}
-DEMIX_LENGTH=${32:-"10000"}
-DEMIX_ALL_FLAG=${33:-"1"}
+FIND_ROIS_START=${31:-"1"}
+FIND_ROIS_LENGTH=${32:-"10000"}
+FIND_ROIS_ALL_FLAG=${33:-"1"}
 HP_SPACING=${34:-"10"}
 EDGE_TRIM=${35:-"3"}
 BINNING_FLAG=${36:-"0"}
-NMF_CELLS=${37:-"0"}
-STIM_DIR=${38:-""}
+OPTIMIZE_TRACES=${37:-"1"}
+NMF_CELLS=${38:-"0"}
+STIM_DIR=${39:-""}
 
 # Deactivating the CL args to enable sourcing in the script
 set --
@@ -59,16 +60,17 @@ echo "Output directory: "$OUTPUT
 echo "NormCoRRe: "$NORMCORRE
 echo "Detrending: "$DETREND
 echo "Motion correction: "$MOCO
-echo "Demixing: "$DEMIX
+echo "Find ROIs: "$FIND_ROIS
+echo "Optimize Traces: "$OPTIMIZE_TRACES
 echo "Cutoff point: "$CUTOFF_POINT
 echo "Correlation threshold fix: "$CORR_TH_FIX
 echo "Patch size: "$PATCH_SIZE
 echo "Background rank: "$BG_RANK
 echo "Truncation start: "$TRUNC_START
 echo "Truncation length: "$TRUNC_LENGTH
-echo "Demix start: "$DEMIX_START
-echo "Demix length: "$DEMIX_LENGTH
-echo "Demix all flag: "$DEMIX_DEMIX_ALL_FLAG
+echo "Demix start: "$FIND_ROIS_START
+echo "Demix length: "$FIND_ROIS_LENGTH
+echo "Demix all flag: "$FIND_ROIS_FIND_ROIS_ALL_FLAG
 echo "Registered movie: "$MOV_IN
 echo "Detrending spacing: "$DETR_SPACING
 echo "Row blocks: "$ROW_BLOCKS
@@ -131,12 +133,13 @@ echo "Denoising stage done"
 echo -e "\n"
 
 cd ../demix
-if [ $DEMIX == "1" ]; then
+if [ $FIND_ROIS == "1" ] || [ $OPTIMIZE_TRACES == "1" ]; then
   echo "Starting demixing stage"
   python main.py "$DATA" "$CUTOFF_POINT" "$CORR_TH_FIX" "$PATCH_SIZE" "$BG_RANK" \
-  "$DEMIX_START" "$DEMIX_LENGTH" "$TH_LVL" "$PASS_NUM" "$BG_MASK" "$MERGE_CORR_THR" \
+  "$FIND_ROIS_START" "$FIND_ROIS_LENGTH" "$TH_LVL" "$PASS_NUM" "$BG_MASK" "$MERGE_CORR_THR" \
   "$SUP_ONLY" "$REMOVE_DIMMEST" "$RESIDUAL_CUT" "$UPDATE_AC_MAX_ITER" "$UPDATE_AC_TOL" \
   "$UPDATE_AC_MERGE_OVERLAP_THR" "$UPDATE_AC_KEEP_SHAPE" "$BG_REG_LR" "$BG_REG_MAX_ITER" \
-  "$DEMIX_ALL_FLAG" "$HP_SPACING" "$EDGE_TRIM" "$BINNING_FLAG" "$NMF_CELLS" "$OUTPUT"
+  "$FIND_ROIS_ALL_FLAG" "$HP_SPACING" "$EDGE_TRIM" "$BINNING_FLAG" "$NMF_CELLS" "$OUTPUT" \
+  "$FIND_ROIS" "$OPTIMIZE_TRACES"
   echo "Demixing stage done"
 fi

@@ -13,7 +13,7 @@ import pickle
 from datetime import datetime
 import demixing_plots as plots
 
-# TODO: addd arg parser
+# TODO: add arg parser
 sys.path.append(os.getcwd())
 data_path = str(sys.argv[1])
 cut_off_point = float(sys.argv[2])
@@ -41,7 +41,6 @@ edge_trim = int(float(sys.argv[23]))
 binning_flag = bool(int(sys.argv[24]))
 nmf_cells = [int(idx) for idx in list(sys.argv[25])]
 output_path = sys.argv[26]
-
 calculate_traces_flag = bool(int(sys.argv[27]))
 find_rois_flag = bool(int(sys.argv[28]))
 
