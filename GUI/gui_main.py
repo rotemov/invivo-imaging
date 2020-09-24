@@ -13,6 +13,8 @@ import re
 import webbrowser
 from demix import demixing_plots
 
+# TODO: solve nmf flag issue when loading.
+
 VERSION = 1.2
 IM_SIZE = (800, 600)
 POPUP_SIZE = (200, 400)

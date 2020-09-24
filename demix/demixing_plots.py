@@ -3,6 +3,11 @@ import numpy as np
 from _datetime import datetime
 
 DATE_TIME_FORMAT = "%d%m%Y_%H%M%S"
+LINE_WIDTH = 0.5
+TRACES_X_LABEL = "frames"
+
+# TODO: decrease line width
+# TODO: Transpose NMF
 
 
 def get_time_stamp():
@@ -21,8 +26,8 @@ def plot_final_traces(beta_hat2, ref_im, mov_dims, X2, name, path, show=True):
     num_traces = beta_hat2.shape[0]
     plt.figure(figsize=(25, 3 * num_traces))
     for idx in range(num_traces):
-        plt.subplot(num_traces, 2, 2 * idx + 1)
-        plt.plot(beta_hat2[idx, :])
+        plt.subplot(num_traces, 2, 2 * idx + 1, xlabel=TRACES_X_LABEL)
+        plt.plot(beta_hat2[idx, :], linewidth=LINE_WIDTH)
         plt.subplot(num_traces, 2, 2 * idx + 2)
         lower, upper = np.percentile(ref_im.flatten(), [1, 99])
         plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
@@ -36,8 +41,8 @@ def plot_intermediate_traces(a, c, ref_im, mov_dims, name, path, show=True):
     cell_ct = c.shape[1]
     plt.figure(figsize=(25, 3 * cell_ct))
     for cell_num in range(cell_ct):
-        plt.subplot(cell_ct, 2, 2 * cell_num + 1)
-        plt.plot(c[:, cell_num])
+        plt.subplot(cell_ct, 2, 2 * cell_num + 1, xlabel=TRACES_X_LABEL)
+        plt.plot(c[:, cell_num], linewidth=LINE_WIDTH)
         plt.title(cell_num, size=16)
         plt.subplot(cell_ct, 2, 2 * cell_num + 2)
         lower, upper = np.percentile(ref_im.flatten(), [1, 99])
@@ -53,8 +58,8 @@ def plot_bg_traces(fb, ff, mov_dims, name, path, show=True):
     bg_rank = fb.shape[1]
     plt.figure(figsize=(25, 3 * bg_rank))
     for bkgd_num in range(bg_rank):
-        plt.subplot(bg_rank, 2, 2 * bkgd_num + 1)
-        plt.plot(ff[:, bkgd_num])
+        plt.subplot(bg_rank, 2, 2 * bkgd_num + 1, xlabel=TRACES_X_LABEL)
+        plt.plot(ff[:, bkgd_num], linewidth=LINE_WIDTH)
         bkgd_comp = fb[:, bkgd_num].reshape(mov_dims)
         plt.subplot(bg_rank, 2, 2 * bkgd_num + 2)
         plt.imshow(bkgd_comp)
@@ -63,19 +68,19 @@ def plot_bg_traces(fb, ff, mov_dims, name, path, show=True):
 
 
 def plot_nmf_traces(rlt, ref_im, mov_dims, name, path, show=True):
-    ref_im = ref_im.transpose(1, 0)
+    ref_im = ref_im
     cell_ct = rlt["fin_rlt"]["c"].shape[1]
     plt.figure(figsize=(25, 3 * cell_ct))
     for cell_num in range(cell_ct):
-        plt.subplot(cell_ct, 2, 2 * cell_num + 1)
-        plt.plot(rlt["fin_rlt"]["c"][:, cell_num])
+        plt.subplot(cell_ct, 2, 2 * cell_num + 1, xlabel=TRACES_X_LABEL)
+        plt.plot(rlt["fin_rlt"]["c"][:, cell_num], linewidth=LINE_WIDTH)
         plt.title(cell_num, size=24)
 
         plt.subplot(cell_ct, 2, 2 * cell_num + 2)
         lower, upper = np.percentile(ref_im.flatten(), [1, 99])
         plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
 
-        cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[0], mov_dims[1]).transpose(1, 0)
+        cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[1], mov_dims[0])
         cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
         plt.imshow(cell_loc, cmap='jet', alpha=0.5)
     save_plot(name, path, show)
