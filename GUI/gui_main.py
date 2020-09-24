@@ -77,7 +77,7 @@ def load_picture_on_canvas(values, graph, im_name):
         except PIL.UnidentifiedImageError as e:
             raise FileNotFoundError(PLOT_FAIL_POPUP.format(im_name, str(e)))
     else:
-        raise FileNotFoundError(LOAD_TO_CANVAS_ERROR_FORMAT.format(im_name))
+        raise FileNotFoundError(PLOT_FAIL_POPUP.format(im_name, "File not found."))
 
 
 def open_traces_plot(values, voltage_file, footprint_file, ref_file):
@@ -106,7 +106,7 @@ def plot_super_pixels(values, rlt_file, ref_file):
             rlt = pickle.load(f)
         demixing_plots.plot_super_pixels(rlt, ref_im, "super_pixels", plot_dir)
     else:
-        sg.Popup(PLOT_FAIL_POPUP)
+        sg.Popup(PLOT_FAIL_POPUP.format())
 
 
 def plot_nmf_traces(values, rlt_file, ref_file):
@@ -308,10 +308,8 @@ def main():
         [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre")],
         [sg.Checkbox('Detrending', size=CHECK_BOX_SIZE, default=True, key="detrend")],
         [sg.Checkbox('Motion correction', size=CHECK_BOX_SIZE, default=True, key="moco")],
-
         [sg.Checkbox('Find ROIs', size=CHECK_BOX_SIZE, default=True, key="find_rois")],
         [sg.Checkbox('Optimize Traces', size=CHECK_BOX_SIZE, default=True, key="optimize_traces")],
-
         [sg.Checkbox('Quick run', size=CHECK_BOX_SIZE, default=False, key="sup_only")],
         [sg.Text('Cut off point %', size=LABEL_SIZE),
          sg.Slider(range=(80, 99), orientation='h', size=SLIDER_SIZE, key='cut_off_point', default_value=90)],
@@ -450,7 +448,6 @@ def main():
     window = sg.Window('Invivo imaging - Adam Lab - ver' + str(VERSION), layout, no_titlebar=False)
 
     while True:
-        fig_num = 1
         event, values = window.read()
         if event == sg.WIN_CLOSED or event == 'Quit':
             break

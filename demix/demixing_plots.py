@@ -14,7 +14,7 @@ def save_plot(name, path, show):
     plt.savefig(path + full_name)
     print("Plot saved: " + full_name)
     if show:
-        plt.show()
+        plt.show(block=False)
 
 
 def plot_final_traces(beta_hat2, ref_im, mov_dims, X2, name, path, show=True):

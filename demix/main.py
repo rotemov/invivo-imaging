@@ -41,8 +41,9 @@ edge_trim = int(float(sys.argv[23]))
 binning_flag = bool(int(sys.argv[24]))
 nmf_cells = [int(idx) for idx in list(sys.argv[25])]
 output_path = sys.argv[26]
-calculate_traces_flag = bool(int(sys.argv[27]))
-find_rois_flag = bool(int(sys.argv[28]))
+find_rois_flag = bool(int(sys.argv[27]))
+calculate_traces_flag = bool(int(sys.argv[28]))
+
 
 plot_path = output_path + '/plots/'
 
@@ -156,9 +157,10 @@ def save_outputs(path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dim
     io.imsave(path + '/temporal_traces' + suffix + '.tif', beta_hat2)
     io.imsave(path + '/cell_traces' + suffix + '.tif', beta_hat2[:n_cells, :])
     io.imsave(path + '/residual_var' + suffix + '.tif', res)
-    io.imsave(path + '/ref_im' + suffix + '.tif', ref_im)
     with open(path + '/ref' + suffix + '.tif', 'wb') as f:
         pickle.dump([mov_dims, ref_im], f)
+    with open(path + '/rlt' + suffix + '.tif', 'wb') as f:
+        pickle.dump(rlt, f)
     io.imsave(path + '/cell_locations' + suffix + '.tif', np.array(get_cell_locations(X2, n_cells, mov_dims)))
     if n_cells > 1:
         io.imsave(path + '/cell_demixing_matrix' + suffix + '.tif', get_cell_demixing_matrix(X2, n_cells))
