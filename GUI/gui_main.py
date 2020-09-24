@@ -42,7 +42,7 @@ TUTORIAL_LINK = 'https://github.com/rotemov/invivo-imaging'
 
 
 def convert_to_bytes(file_or_bytes, resize=None):
-    '''
+    """
     Will convert into bytes and optionally resize an image that is a file or a base64 bytes object.
     :param file_or_bytes: either a string filename or a bytes base64 image object
     :type file_or_bytes:  (Union[str, bytes])
@@ -50,7 +50,7 @@ def convert_to_bytes(file_or_bytes, resize=None):
     :type resize: (Tuple[int, int] or None)
     :return: (bytes) a byte-string object
     :rtype: (bytes)
-    '''
+    """
     if isinstance(file_or_bytes, str):
         img = PIL.Image.open(file_or_bytes)
     else:
