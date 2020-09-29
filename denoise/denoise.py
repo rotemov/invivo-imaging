@@ -7,7 +7,7 @@ import scipy.io as io
 
 # Preprocessing Dependencies
 from trefide.utils import psd_noise_estimate
-
+import math
 # PMD Model Dependencies
 from trefide.pmd import batch_decompose, batch_recompose, overlapping_batch_decompose, overlapping_batch_recompose
 
@@ -34,6 +34,9 @@ rblocks = int(sys.argv[5])
 cblocks = int(sys.argv[6])
 trunc_start = int(sys.argv[7])
 trunc_length = int(sys.argv[8])
+auto_blocks = bool(int(sys.argv[9]))
+patch_size_edge = int(sys.argv[10])
+stim_dir = str(sys.argv[11])
 trunc_end = trunc_start + trunc_length
 
 if not os.path.isfile(out_dir + '/detr_nnorm.tif'):
@@ -66,6 +69,10 @@ if not os.path.isfile(out_dir + '/detr_nnorm.tif'):
     ######## PUT MOVIE TRIMMING HERE #######
     print("Movie reading done")
 
+    if auto_blocks:
+        rblocks = math.ceil(nrows / patch_size_edge)
+        cblocks = math.ceil(ncols / patch_size_edge)
+
     row_cut_lower = math.floor((nrows % (2 * rblocks)) / 2)
     row_cut_upper = raw_mov.shape[0] - math.ceil((nrows % (2 * rblocks)) / 2)
     col_cut_lower = math.floor((ncols % (2 * cblocks)) / 2)
@@ -85,16 +92,16 @@ if not os.path.isfile(out_dir + '/detr_nnorm.tif'):
 
     print('Movie size: {0}\n'.format(raw_mov.shape))
 
-    if len(sys.argv) <= 9 or sys.argv[9] == '':
+    if stim_dir ==  '':
         raw_stim = 10 * np.ones(raw_mov.shape[2])  # simulate stimulation values for invivo data
     else:
-        wf_path = sys.argv[9]
+        wf_path = stim_dir
         if wf_path[-4:] == '.bin':
-            wf = np.fromfile(data_dir + sys.argv[9], dtype="float64")
+            wf = np.fromfile(stim_dir, dtype="float64")
             raw_stim = (wf.newbyteorder().reshape(2, -1))[0, ::10]
             raw_stim = raw_stim[100:]
         elif wf_path[-4:] == '.mat':
-            wf = io.loadmat(data_dir + sys.argv[9])
+            wf = io.loadmat(stim_dir)
             wf = wf['BlueWF'][0]
             raw_stim = wf[::10]
             raw_stim = raw_stim[100:]
@@ -116,7 +123,7 @@ if not os.path.isfile(out_dir + '/detr_nnorm.tif'):
     start = time.time()
 
     mov_nopbleach, trend, stim, disc_idx = detrend(mov, stim, disc_idx.squeeze(), visualize=None, spacing=detr_spacing)
-    mov_detr = mov_nopbleach;
+    mov_detr = mov_nopbleach
     # mov_detr, subthr, stim, disc_idx = detrend(mov_nopbleach, stim, disc_idx.squeeze(), visualize=None, spacing=50)
 
     print("Detrending took: " + str(time.time() - start) + ' sec\n')

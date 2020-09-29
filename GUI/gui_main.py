@@ -12,7 +12,7 @@ from pickle import UnpicklingError
 import re
 import webbrowser
 from demix import demixing_plots
-
+import copy
 
 VERSION = 1.3
 IM_SIZE = (800, 600)
@@ -21,8 +21,8 @@ sg.theme('Reddit')
 CHECK_BOX_SIZE = (25, 1)
 INPUT_SIZE = (10, 1)
 LABEL_SIZE = (25, 1)
-SLIDER_SIZE = (34, 20)
-NUM_PARAMS = 40
+SLIDER_SIZE = (32, 20)
+NUM_PARAMS = 41
 DATETIME_FORMAT = "%d%m%Y_%H%M%S"
 NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 'max_size',
                   'sample_freq', 'bg_rank', 'detr_spacing', 'row_blocks', 'col_blocks',
@@ -30,7 +30,7 @@ NUM_FIELD_KEYS = ['patch_size_edge', 'trunc_start', 'trunc_length', 'min_size', 
                   'update_ac_max_iter', 'update_ac_tol', 'update_ac_merge_overlap_thr',
                   'bg_reg_lr', 'bg_reg_max_iter', 'demix_start', 'demix_length', 'job_id',
                   'job_to_cancel', 'edge_trim']
-DIR_PARAMS_IDX = [1, 13, 39]
+DIR_PARAMS_IDX = [1, 13, 40]
 MAX_NMF_ELEMENTS = 15
 FREQ_TO_HP_SPACING = 100
 LOAD_PARAMS_DONT_UPDATE = ['nmf_traces_graph', 'super_pixels_graph', 'Other_plots_graph', '-TABGROUP-',
@@ -40,7 +40,7 @@ SSH_LINE = "sshpass -p {} ssh -o StrictHostKeyChecking=no rotem.ovadia@bs-cluste
 PLOT_FAIL_POPUP = "The file {} was not found or is corrupt.\nThe job might be still running." \
                   "\nPlease check output directory and running jobs.\nError message:\n{}"
 TUTORIAL_LINK = 'https://github.com/rotemov/invivo-imaging'
-
+SPACE = sg.Text("", size=LABEL_SIZE)
 
 def convert_to_bytes(file_or_bytes, resize=None):
     """
@@ -157,7 +157,7 @@ def get_args_array(values):
     args[12] = values['trunc_length']
     args[13] = values['output_dir']
     args[14] = values['mov_in']
-    args[15] = values['detr_spacing']
+    args[15] = 5 * int(values["sample_freq"]) if values["auto_detr_spacing"] else int(values['detr_spacing'])
     args[16] = values['row_blocks']
     args[17] = values['col_blocks']
     args[18] = values['residual_cut']
@@ -181,7 +181,10 @@ def get_args_array(values):
     args[36] = values['binning_flag']
     args[37] = values['optimize_traces']
     args[38] = parse_nmf_checkboxes(values)
-    args[39] = values['stim_dir']
+
+    args[39] = values["auto_blocks"]
+
+    args[40] = values['stim_dir']
 
     if values['network_drive_flag']:
         for idx in DIR_PARAMS_IDX:
@@ -306,60 +309,71 @@ def main():
          sg.FolderBrowse(key='output_dir_browser')],
         [sg.Checkbox('From network drive', size=CHECK_BOX_SIZE, default=False, key='network_drive_flag')],
         [sg.Text('Cluster password', size=LABEL_SIZE), sg.InputText('', key='password', password_char='*')],
-        [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre")],
-        [sg.Checkbox('Detrending', size=CHECK_BOX_SIZE, default=True, key="detrend")],
-        [sg.Checkbox('Motion correction', size=CHECK_BOX_SIZE, default=True, key="moco")],
-        [sg.Checkbox('Find ROIs', size=CHECK_BOX_SIZE, default=True, key="find_rois")],
-        [sg.Checkbox('Optimize Traces', size=CHECK_BOX_SIZE, default=True, key="optimize_traces")],
-        [sg.Checkbox('Quick run', size=CHECK_BOX_SIZE, default=False, key="sup_only")],
-        [sg.Text('Cut off point %', size=LABEL_SIZE),
-         sg.Slider(range=(80, 99), orientation='h', size=SLIDER_SIZE, key='cut_off_point', default_value=90)],
-        [sg.Text('Correlation threshold fix %', size=LABEL_SIZE),
-         sg.Slider(range=(30, 60), orientation='h', size=SLIDER_SIZE, key='corr_th_fix', default_value=45)],
+        [copy.deepcopy(SPACE)],
+        [sg.Text("General parameters: ")],
+        [sg.Text('Cell diameter', size=LABEL_SIZE),
+         sg.In(default_text='30', size=INPUT_SIZE, key='patch_size_edge', enable_events=True),
+         sg.Text('Sample frequency[Hz]', size=LABEL_SIZE),
+         sg.In(default_text='1000', size=INPUT_SIZE, key='sample_freq', enable_events=True)],
+        [copy.deepcopy(SPACE)],
+        [sg.Text("Denoise parameters: ")],
+        [sg.Checkbox('NoRMCoRRe', size=CHECK_BOX_SIZE, default=True, key="normcorre"),
+         sg.Checkbox('PMD and Detrending', size=CHECK_BOX_SIZE, default=True, key="detrend"),
+         sg.Checkbox('Motion correction', size=CHECK_BOX_SIZE, default=True, key="moco")],
         [sg.Text('Denoise start frame', size=LABEL_SIZE),
          sg.In(default_text='1', size=INPUT_SIZE, key='trunc_start', enable_events=True),
          sg.Text('Number of frames', size=LABEL_SIZE),
          sg.In(default_text='5000', size=INPUT_SIZE, key='trunc_length', enable_events=True)],
+        [copy.deepcopy(SPACE)],
+        [sg.Text("Demix parameters: ")],
+        [sg.Checkbox('Find ROIs', size=CHECK_BOX_SIZE, default=True, key="find_rois"),
+         sg.Checkbox('Optimize Traces', size=CHECK_BOX_SIZE, default=True, key="optimize_traces"),
+         sg.Checkbox('Quick run', size=CHECK_BOX_SIZE, default=False, key="sup_only")],
         [sg.Text('Demix start frame', size=LABEL_SIZE),
-         sg.In(default_text='1', size=INPUT_SIZE, key='demix_start', enable_events=True),
+         sg.In(default_text='1', size=INPUT_SIZE, key='demix_start', enable_events=True, disabled=True),
          sg.Text('Number of frames', size=LABEL_SIZE),
-         sg.In(default_text='10000', size=INPUT_SIZE, key='demix_length', enable_events=True),
-         sg.Checkbox('All frames', default=True, key='demix_all_frame_flag', size=CHECK_BOX_SIZE)],
-        [sg.Text('Cell diameter', size=LABEL_SIZE),
-         sg.In(default_text='30', size=INPUT_SIZE, key='patch_size_edge', enable_events=True)],
-        [sg.Text('Sample frequency[Hz]', size=LABEL_SIZE),
-         sg.In(default_text='1000', size=INPUT_SIZE, key='sample_freq', enable_events=True)],
+         sg.In(default_text='10000', size=INPUT_SIZE, key='demix_length', enable_events=True, disabled=True),
+         sg.Checkbox('All frames', default=True, key='demix_all_frame_flag', size=CHECK_BOX_SIZE, enable_events=True)],
+        [sg.Text('Cut off point %', size=LABEL_SIZE),
+         sg.Slider(range=(1, 99), orientation='h', size=SLIDER_SIZE, key='cut_off_point', default_value=90),
+         sg.Text("Recommended: 80-99")],
+        [sg.Text('Correlation threshold fix %', size=LABEL_SIZE),
+         sg.Slider(range=(1, 99), orientation='h', size=SLIDER_SIZE, key='corr_th_fix', default_value=45), sg.Text("Recommended: 30-60")],
+        [sg.Text('# bg elements', size=LABEL_SIZE),
+         sg.Slider(range=(0, 20), orientation='h', size=SLIDER_SIZE, key='bg_rank', default_value=4), sg.Text("Recommended: 3-6")],
+        [copy.deepcopy(SPACE)],
+        [sg.Text("Job management: ")],
         [sg.Text('Last job started: ', size=LABEL_SIZE, key="last_job")],
         [sg.Text('Choose a job to cancel: ', size=LABEL_SIZE),
          sg.In(size=INPUT_SIZE, key="job_to_cancel", default_text=""), sg.Button("Cancel job")]
     ]
 
+    row_blocks = sg.In(default_text='4', size=INPUT_SIZE, key='row_blocks', enable_events=True, disabled=True)
+    col_blocks = sg.In(default_text='2', size=INPUT_SIZE, key='col_blocks', enable_events=True, disabled=True)
+
     advanced_params = [
         [sg.Text('Warning: Some of the illegal parameter combinations have not been disabled. '
                  'Please revert to the original parameters if your runs constantly fail.')],
-        [sg.Text('# bg elements', size=LABEL_SIZE),
-         sg.Slider(range=(1, 8), orientation='h', size=SLIDER_SIZE, key='bg_rank', default_value=4)],
+        [sg.Text("Denoise parameters: ")],
         [sg.Text('Detrend spacing', size=LABEL_SIZE),
-         sg.In(default_text='5000', size=INPUT_SIZE, key='detr_spacing', enable_events=True)],
-        [sg.Text('Row blocks', size=LABEL_SIZE),
-         sg.In(default_text='4', size=INPUT_SIZE, key='row_blocks', enable_events=True)],
-        [sg.Text('Column blocks', size=LABEL_SIZE),
-         sg.In(default_text='2', size=INPUT_SIZE, key='col_blocks', enable_events=True)],
+         sg.In(default_text='5000', size=INPUT_SIZE, key='detr_spacing', enable_events=True, disabled=True),
+         sg.Checkbox("Auto", size=CHECK_BOX_SIZE, default=True, key="auto_detr_spacing", enable_events=True)],
+        [sg.Text('Row blocks', size=LABEL_SIZE), row_blocks,
+         sg.Text('Column blocks', size=LABEL_SIZE), col_blocks,
+         sg.Checkbox("Auto", size=CHECK_BOX_SIZE, default=True, key="auto_blocks", enable_events=True)],
+        [copy.deepcopy(SPACE)],
+        [sg.Text("Demix parameters: ")],
         [sg.Text('Threshold level', size=LABEL_SIZE),
-         sg.In(default_text='4', size=INPUT_SIZE, key='th_lvl', enable_events=True)],
+         sg.In(default_text='4', size=INPUT_SIZE, key='th_lvl', enable_events=True), sg.Text("Decrease if spikes are not very prominent")],
         [sg.Text('# Passes', size=LABEL_SIZE),
          sg.In(default_text='1', size=INPUT_SIZE, key='pass_num', enable_events=True)],
         [sg.Text('Merge correlation threshold', size=LABEL_SIZE),
-         sg.In(default_text='0.8', size=INPUT_SIZE, key='merge_corr_thr', enable_events=True)],
-        [sg.Text('Edge trim', size=LABEL_SIZE),
-         sg.Slider(range=(0, 10), orientation='h', size=SLIDER_SIZE, key='edge_trim', default_value=3)],
-        [sg.Checkbox('Binning', size=CHECK_BOX_SIZE, default=False, key="binning_flag")],
-        [sg.Text('Remove dimmest ', size=LABEL_SIZE),
-         sg.In(default_text='0', size=INPUT_SIZE, key='remove_dimmest', enable_events=True)],
+         sg.In(default_text='0.8', size=INPUT_SIZE, key='merge_corr_thr', enable_events=True), sg.Text("Range: 0.01 - 0.99. Increase to separate grouped cells")],
+        [sg.Checkbox('Binning', size=CHECK_BOX_SIZE, default=False, key="binning_flag"), sg.Text("Use for very large FOVs to decrease runtime")],
         [sg.Text('Residual cut', size=LABEL_SIZE),
          sg.In(default_text='0.6', size=INPUT_SIZE, key='residual_cut', enable_events=True)],
         [sg.Text('UAC max iterations', size=LABEL_SIZE),
-         sg.In(default_text='35', size=INPUT_SIZE, key='update_ac_max_iter', enable_events=True)],
+         sg.In(default_text='35', size=INPUT_SIZE, key='update_ac_max_iter', enable_events=True), sg.Text("Increase if traces are noisy")],
         [sg.Text('UAC tol', size=LABEL_SIZE),
          sg.In(default_text='1e-8', size=INPUT_SIZE, key='update_ac_tol', enable_events=True)],
         [sg.Text('UAC merge overlap threshold', size=LABEL_SIZE),
@@ -368,10 +382,10 @@ def main():
         [sg.Text('BGR learning rate', size=LABEL_SIZE),
          sg.In(default_text='0.001', size=INPUT_SIZE, key='bg_reg_lr', enable_events=True)],
         [sg.Text('BGR max iterations', size=LABEL_SIZE),
-         sg.In(default_text='1000', size=INPUT_SIZE, key='bg_reg_max_iter', enable_events=True)],
-        [sg.Text('Registered movie name', size=LABEL_SIZE), sg.InputText(key='mov_in', default_text='movReg.tif')],
+         sg.In(default_text='1000', size=INPUT_SIZE, key='bg_reg_max_iter', enable_events=True), sg.Text("Increase if traces are noisy")],
+        [sg.Text('Registered movie name', size=LABEL_SIZE), sg.InputText(key='mov_in', default_text='movReg.tif'), sg.Text("Change to post NoRMCorre movie if done separately")],
         [sg.Text('Stimulation dir: ', size=LABEL_SIZE), sg.InputText(key='stim_dir'),
-         sg.FolderBrowse(key='stim_dir_browser')],
+         sg.FolderBrowse(key='stim_dir_browser'), sg.Text("Leave empty if it doesn't exist")],
         [sg.Checkbox('Background mask', size=CHECK_BOX_SIZE, default=False, key="bg_mask")],
         [sg.Text('Min cell area (pix)', size=LABEL_SIZE),
          sg.In(default_text='10', size=INPUT_SIZE, key='min_size', enable_events=True),
@@ -399,7 +413,13 @@ def main():
     super_pixels = [
         [sg.Text('Make sure the super pixels look like the cells or the background:')],
         [super_pixels_graph],
-        [sg.Button('Open zoomable plot', key='super_pixels_zoom')]
+        [sg.Button('Open zoomable plot', key='super_pixels_zoom')],
+        [sg.Text('Edge trim', size=LABEL_SIZE),
+         sg.Slider(range=(0, 10), orientation='h', size=SLIDER_SIZE, key='edge_trim', default_value=3),
+         sg.Text("Increase if you get line superpixels arround the edges")],
+        [sg.Text('Remove dimmest ', size=LABEL_SIZE),
+         sg.In(default_text='0', size=INPUT_SIZE, key='remove_dimmest', enable_events=True),
+         sg.Text("Warning: do not remove more than exist")],
     ]
 
     final_traces_graph = sg.Graph(canvas_size=IM_SIZE, graph_bottom_left=(0, 0), graph_top_right=IM_SIZE,
@@ -496,6 +516,14 @@ def main():
             cancel_job(values)
         if event == 'Update pipeline':
             update_pipline()
+        if event == "auto_blocks":
+            row_blocks.update(disabled=values["auto_blocks"])
+            col_blocks.update(disabled=values["auto_blocks"])
+        if event == "auto_detr_spacing":
+            window["detr_spacing"].update(disabled=values["auto_detr_spacing"])
+        if event == "demix_all_frame_flag":
+            window["demix_start"].update(disabled=values["demix_all_frame_flag"])
+            window["demix_length"].update(disabled=values["demix_all_frame_flag"])
 
         for key in NUM_FIELD_KEYS:
             if event == key:

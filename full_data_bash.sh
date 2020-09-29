@@ -47,7 +47,8 @@ EDGE_TRIM=${35:-"3"}
 BINNING_FLAG=${36:-"0"}
 OPTIMIZE_TRACES=${37:-"1"}
 NMF_CELLS=${38:-"0"}
-STIM_DIR=${39:-""}
+AUTO_BLOCKS=${39-"1"}
+STIM_DIR=${40:-""}
 
 # Deactivating the CL args to enable sourcing in the script
 set --
@@ -75,6 +76,7 @@ echo "Registered movie: "$MOV_IN
 echo "Detrending spacing: "$DETR_SPACING
 echo "Row blocks: "$ROW_BLOCKS
 echo "Column blocks: "$COL_BLOCKS
+echo "Automatically choose blocks: "$AUTO_BLOCKS
 echo "Stimulation directory: "$STIM_DIR
 echo "Threshold level: "$TH_LVL
 echo "Number of passes: "$PASS_NUM
@@ -114,12 +116,12 @@ else
   echo "Skipping NormCoRRe"
 fi
 if [ $DETREND == "1" ]; then
-  echo "Starting detrending"
+  echo "Starting PMD and detrending"
   python denoise.py "$DATA" "$MOV_IN" "$OUTPUT" "$DETR_SPACING" "$ROW_BLOCKS" "$COL_BLOCKS" \
-  "$TRUNC_START" "$TRUNC_LENGTH" "$STIM_DIR"
-  echo "Detrending finished"
+  "$TRUNC_START" "$TRUNC_LENGTH" "$AUTO_BLOCKS" "$PATCH_SIZE" "$STIM_DIR"
+  echo "PMD and detrending finished"
 else
-  echo "Skipping detrending"
+  echo "Skipping PMD and detrending"
 fi
 if [ $MOCO == "1" ]; then
   echo "Starting motion_correction"

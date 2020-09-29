@@ -146,10 +146,10 @@ How big the cell is (in pixels) across its longest axis.
 Each pixel in a super pixel get a grade of how "cell-like" it is, decided by how strongly it activates 
 when it's neighbors activate. This means we would expect the central pixels of a ROI to have a higher grade. In order
 to identify the cell's borders we give a minimal grade for a pixel to have in order for it to be part of the cell.
-These grades also affect how the voltage traces are calculated from each cell.
+These grades also affect how the voltage traces are calculated from each cell. These tend to be pretty high percentages.
 
 #### correlation threshold fix
-(TODO)
+This is the same as cuttoff point but for ROIs. These tend to be more moderate percentages.
 
 #### # bg elements
 This is for discarding background elements such as fluorescent unfocused cells in the background or blood vessels. In general
@@ -159,6 +159,8 @@ this parameter should be set between 3-6 as every video has some form of backgro
 The denoising step of the pipeline has a tendency to smear the edges of the frames resulting in the algorithm identifying some 
 unwanted superpixels which look like lines at the edge of the frame. In order to solve this you can choose to trim some pixels
 off the edge of the frames.
+
+#### 
 
 ### Workflow
 
@@ -185,3 +187,12 @@ to figure out what went wrong. If you are experiencing issues you can always ema
 an issue on github with the job number and I will try to solve it.
 
 (To be continued ...)
+
+
+## TODO
+bg_elem to main - done
+remove dimmest to superpixels - done
+detrend spacing prop to sample freq - done
+row/col blocks prop to FOV size - need to add the flag
+th lvl for less prominent spikes
+increase iterations for noisy traces
