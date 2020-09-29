@@ -356,7 +356,7 @@ def calculate_traces(rlt, mov_b, bg_flag, first_frame, last_frame, mov, ref_im, 
     beta_hat2, res = find_optimal_traces(X2, Y)
 
     plots.plot_final_traces(beta_hat2, ref_im, mov_dims, X2, "Traces", plot_path, show=False)
-    save_outputs_optimize_traces(plot_path, suffix, X2, n_cells, beta_hat2, res, ref_im, rlt, mov_dims)
+    save_outputs_optimize_traces(plot_path, suffix, X2, n_cells, beta_hat2, res, ref_im)
 
 
 def _initialize_params():
