@@ -57,7 +57,7 @@ suffix = ''
 optopatch_stim = False
 
 
-def remove_previous_outputs(path, suffix, files_to_remove)
+def remove_previous_outputs(path, suffix, files_to_remove):
     for file in files_to_remove:
         full_path = path + "/" + file + suffix + '.tif'
         if os.path.exists(full_path):
