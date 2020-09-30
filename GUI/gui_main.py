@@ -11,7 +11,9 @@ import pickle
 from pickle import UnpicklingError
 import re
 import webbrowser
-from demix import demixing_plots
+import sys
+sys.path.insert(1, '../demix')
+import demixing_plots
 import copy
 
 VERSION = 1.3
