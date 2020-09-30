@@ -98,7 +98,7 @@ on a Windows 10 computer in the lab.
 Before we jump into the work flow it's good to have a basic understanding of  some of the jargon and what the 
 important ones stand for.
 
-###  Important parameters (Not complete)
+### Parameters and jargon
 
 #### GUI
 Graphical user interface, or in simpler terms the windows you interact with as a user.
@@ -127,6 +127,10 @@ to use a representing part of the video (frames where all of the cells of intere
 For large FOVs (more than 800 total pixels per frame) it is recommended to keep the number of frames under 10k and usually 
 5k is enough.
 
+#### row/col blocks
+This is simply how the video is divided into a grid in one of the steps. You want to dived such that each cell in the 
+grid is approximately the size of one neuron (automatic option is available).
+
 ### Demixing
 Taking the denoised video, identifying the cells and outputing the voltage traces of their activity. In general the demixing stage 
 is much less robust than the denoising stage. It will require some iterations to get the parameters right. 
@@ -138,6 +142,14 @@ activate). In general any video you demix on half (or more) of the frames from s
 
 #### superpixels
 These are the algorithm's predictions of the regions of interest (ROIs), which means they should have the same shape as the cells.
+
+##### remove dimmest
+Removes the dimmest superpixels. They are numbered from brightest to lowest (1 is the brightest).
+
+##### edge trim
+The denoising step of the pipeline has a tendency to smear the edges of the frames resulting in the algorithm identifying some 
+unwanted superpixels which look like lines at the edge of the frame. In order to solve this you can choose to trim some pixels
+off the edge of the frames.
 
 #### cell diameter
 How big the cell is (in pixels) across its longest axis.
@@ -155,12 +167,12 @@ This is the same as cuttoff point but for ROIs. These tend to be more moderate p
 This is for discarding background elements such as fluorescent unfocused cells in the background or blood vessels. In general
 this parameter should be set between 3-6 as every video has some form of background.
 
-#### edge trim
-The denoising step of the pipeline has a tendency to smear the edges of the frames resulting in the algorithm identifying some 
-unwanted superpixels which look like lines at the edge of the frame. In order to solve this you can choose to trim some pixels
-off the edge of the frames.
+#### th lvl
+This determines how prominent a spike has to be in order for it to be identified. If you have small spikes compared to
+the subthreshold activity try decreasing this.
 
-#### 
+#### number of iterations
+These determine how long the regression runs before giving an output. If you get noisy traces you can increase these parameters.
 
 ### Workflow
 
@@ -173,26 +185,21 @@ only on your first run.
 (same number of cells / microscope parameters / lighting / experimental apparatus) then start from the parameters that 
 worked for that video and modify from there. Otherwise start with the default parameters.
 
-3. After each run see which cells the algorithm detects in the superpixels and NMF traces tab. You want the super pixels to
-resemble the cells as much as possible and 
+3. After each run see which cells the algorithm detects in the superpixels and NMF traces tab. You will probably want
+to play with cell diameter (for cell identification), Cutoff point (for superpixels), edge trim (located in the 
+superpixels tab, if you are getting line superpixels arround the edge), Correlation threshold fix and # 
+of bg elements (for ROIs). In the case some cells are classified together in the superpixels increase merge corr thr in 
+advanced params.
 
-3. Increasing the parameters: correlation threshold fix, cutoff point will make the cells smaller / remove unwanted 
-backgrounds.
+4. After you achieve satisfactory superpixels and ROIs you need to choose which identified ROIs are actually cells,
+simply look in the plot and check the corresponding checkboxes at the bottom.
+In addition you can remove the dimmest superpixels in the superpixels tab if needed.
 
-4. Increasing cell diameter will make the identified cells larger (if you see the pipline is missing some of the larger
-cells increase this).
+5. At this point your last run should have the correct traces. Zoom in on them and see if they look like brain activity.
+If you have something that doesn't look like it look at it's ROI and try to see if it is indeed a cell. In the final
+traces plot the cells appear first and the background follows.
 
-5. The logs are meant mostly for the developers, however if you know how tracebacks work don't hesitate to use them to
-to figure out what went wrong. If you are experiencing issues you can always email rotem.ovadia@mail.huji.ac.il or open
-an issue on github with the job number and I will try to solve it.
-
-(To be continued ...)
-
-
-## TODO
-bg_elem to main - done
-remove dimmest to superpixels - done
-detrend spacing prop to sample freq - done
-row/col blocks prop to FOV size - need to add the flag
-th lvl for less prominent spikes
-increase iterations for noisy traces
+6. (optional) The logs are meant mostly for the developers, however if you know how tracebacks work don't hesitate to use them to
+to figure out what went wrong.  In general if you see a bunch of saves at the end then the run probably went well.
+If you are experiencing issues you can always email rotem.ovadia@mail.huji.ac.il or open an issue on github with the 
+job number and params file and I will try to solve it (I have access to all logs).
