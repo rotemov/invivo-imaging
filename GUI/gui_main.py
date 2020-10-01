@@ -16,8 +16,8 @@ sys.path.insert(1, '../demix')
 import demixing_plots
 import copy
 
-VERSION = 1.3
-IM_SIZE = (800, 600)
+VERSION = 1.4
+IM_SIZE = (1000, 750)
 POPUP_SIZE = (200, 400)
 sg.theme('Reddit')
 CHECK_BOX_SIZE = (25, 1)
@@ -309,7 +309,8 @@ def main():
         [sg.Text('Movie file:', size=LABEL_SIZE), sg.InputText(key='input_file', default_text=''),
          sg.FileBrowse(key='input_file_browser')],
         [sg.Text('Output directory:', size=LABEL_SIZE), sg.InputText(key='output_dir', default_text=''),
-         sg.FolderBrowse(key='output_dir_browser')],
+         sg.FolderBrowse(key='output_dir_browser'), sg.Text("Folders with a space in their name are not supported"
+                                                            "\nPlease replace spaces with underscore")],
         [sg.Checkbox('From network drive', size=CHECK_BOX_SIZE, default=True, key='network_drive_flag')],
         [sg.Text('Cluster password', size=LABEL_SIZE), sg.InputText('', key='password', password_char='*')],
         [copy.deepcopy(SPACE)],
@@ -486,7 +487,6 @@ def main():
             webbrowser.open_new(TUTORIAL_LINK)
         try:
             if event == 'Load outputs':
-
                 load_picture_on_canvas(values, nmf_traces_graph, 'NMF_Traces.png')
                 load_picture_on_canvas(values, super_pixels_graph, 'super_pixels.png')
                 load_picture_on_canvas(values, final_traces_graph, 'Traces.png')

@@ -27,10 +27,10 @@ def plot_final_traces(beta_hat2, ref_im, mov_dims, X2, name, path, show=True):
         plt.plot(beta_hat2[idx, :], linewidth=LINE_WIDTH)
         plt.subplot(num_traces, 2, 2 * idx + 2)
         lower, upper = np.percentile(ref_im.flatten(), [1, 99])
-        plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
+        plt.imshow(ref_im.transpose(1, 0), cmap='gray', interpolation='none', clim=[lower, upper])
         cell_loc = X2[:, idx].reshape(mov_dims)
         cell_loc = np.ma.masked_where(abs(cell_loc) < 1e-8, cell_loc)
-        plt.imshow(cell_loc, cmap='jet', alpha=0.5)
+        plt.imshow(cell_loc.transpose(1, 0), cmap='jet', alpha=0.5)
     save_plot(name, path, show)
 
 
@@ -74,12 +74,13 @@ def plot_nmf_traces(rlt, ref_im, mov_dims, name, path, show=True):
         plt.title(cell_num, size=24)
 
         plt.subplot(cell_ct, 2, 2 * cell_num + 2)
+
         lower, upper = np.percentile(ref_im.flatten(), [1, 99])
-        plt.imshow(ref_im, cmap='gray', interpolation='none', clim=[lower, upper])
+        plt.imshow(ref_im.transpose(1,0), cmap='gray', interpolation='none', clim=[lower, upper])
 
         cell_loc = rlt["fin_rlt"]["a"][:, cell_num].reshape(mov_dims[0], mov_dims[1])
         cell_loc = np.ma.masked_where(cell_loc == 0, cell_loc)
-        plt.imshow(cell_loc, cmap='jet', alpha=0.5)
+        plt.imshow(cell_loc.transpose(1,0), cmap='jet', alpha=0.5)
     save_plot(name, path, show)
 
 
