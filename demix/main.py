@@ -164,6 +164,17 @@ def save_outputs_optimize_traces(path, suffix, X2, n_cells, beta_hat2, res, mov_
     print('Optimize traces files saved!')
 
 
+def save_data(path, beta_hat2):
+    """
+    Save the final traces to a csv for future analysis
+    :param path:
+    :param beta_hat2:
+    :return:
+    """
+    num_traces = beta_hat2.shape[0]
+    np.savetxt(path + '/traces.csv', beta_hat2[:num_traces, :], delimiter=",")
+
+
 def save_outputs_find_rois(path, suffix, ref_im, rlt, mov_dims):
     files_to_remove = [' rlt', 'ref']
     remove_previous_outputs(path, suffix, files_to_remove)
@@ -357,6 +368,7 @@ def calculate_traces(rlt, mov_b, bg_flag, first_frame, last_frame, mov, ref_im, 
 
     plots.plot_final_traces(beta_hat2, ref_im, mov_dims, X2, "Traces", plot_path, show=False)
     save_outputs_optimize_traces(plot_path, suffix, X2, n_cells, beta_hat2, res, mov_dims)
+    save_data(plot_path, beta_hat2)  # added by Yaniv Melamed 24.3.21
 
 
 def _initialize_params():
